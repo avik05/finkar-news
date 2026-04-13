@@ -17,11 +17,27 @@ function formatTimeAgo(dateString: string) {
   return `${Math.floor(diffInHours / 24)}d ago`;
 }
 
+const SOURCE_LOGOS: Record<string, string> = {
+  "Mint": "https://upload.wikimedia.org/wikipedia/commons/3/3a/Mint_%28newspaper%29_logo.svg",
+  "Economic Times": "https://upload.wikimedia.org/wikipedia/commons/c/c5/The_Economic_Times_logo.svg",
+  "Business Standard": "https://upload.wikimedia.org/wikipedia/commons/b/b5/Business_Standard_logo.svg",
+  "Financial Express": "https://upload.wikimedia.org/wikipedia/commons/9/9f/The_Financial_Express_%28India%29_Logo.svg",
+  "Reuters": "https://upload.wikimedia.org/wikipedia/commons/b/ba/Reuters_logo_2024.svg",
+  "CNBC": "https://upload.wikimedia.org/wikipedia/commons/e/e3/CNBC_logo.svg",
+  "TechCrunch AI": "https://upload.wikimedia.org/wikipedia/commons/b/b1/TechCrunch_logo.svg",
+  "Hugging Face": "https://huggingface.co/front/assets/huggingface_logo-noborder.svg",
+  "MIT Tech Review": "https://upload.wikimedia.org/wikipedia/commons/e/e0/MIT_Technology_Review_modern_logo.svg",
+  "Wired AI": "https://upload.wikimedia.org/wikipedia/commons/9/95/Wired_logo.svg",
+  "TechBuzz AI": "https://logo.clearbit.com/techbuzz.ai?size=512",
+  "Hacker News": "https://upload.wikimedia.org/wikipedia/commons/b/b2/Y_Combinator_logo.svg",
+};
+
 export default function HeroSection({ articles }: { articles: NewsArticle[] }) {
   if (!articles || articles.length === 0) return null;
 
   const mainArticle = articles[0];
   const sideArticles = articles.slice(1, 3);
+  const sourceLogo = SOURCE_LOGOS[mainArticle.source] || `https://logo.clearbit.com/${mainArticle.source.toLowerCase().replace(/\s+/g, '')}.com?size=512`;
 
   return (
     <section className="py-8 md:py-12 border-b border-border bg-background transition-colors duration-300">
@@ -48,15 +64,36 @@ export default function HeroSection({ articles }: { articles: NewsArticle[] }) {
             animate={{ opacity: 1, y: 0 }}
             className="lg:col-span-8 group relative flex flex-col justify-end min-h-[400px] md:min-h-[550px] rounded-3xl overflow-hidden bg-card border border-border"
           >
-            {mainArticle.image_url && (
+            {mainArticle.image_url ? (
               <Image
                 src={mainArticle.image_url}
                 alt={mainArticle.title}
                 fill
                 className="object-cover opacity-60 group-hover:opacity-70 group-hover:scale-105 transition-all duration-700"
               />
+            ) : (
+              <div className="absolute inset-0 bg-neutral-900 overflow-hidden">
+                {/* Large Background Watermark */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] opacity-[0.05] grayscale brightness-0 invert pointer-events-none">
+                  <Image 
+                    src={sourceLogo} 
+                    alt="" 
+                    fill 
+                    className="object-contain p-24"
+                    unoptimized 
+                  />
+                </div>
+                {/* Mesh Gradient */}
+                <div className="absolute inset-0 opacity-40 mix-blend-overlay pointer-events-none" 
+                     style={{ background: 'radial-gradient(circle at 0% 0%, var(--accent) 0%, transparent 50%), radial-gradient(circle at 100% 100%, #22c55e 0%, transparent 50%)' }}>
+                </div>
+                {/* Tech Grid */}
+                <div className="absolute inset-0 opacity-5 pointer-events-none" 
+                     style={{ backgroundImage: `radial-gradient(var(--border) 1px, transparent 0)`, backgroundSize: '40px 40px' }}>
+                </div>
+              </div>
             )}
-            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"></div>
+            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent"></div>
             
             <div className="relative p-6 md:p-10 z-10 transition-colors duration-300">
               <div className="flex items-center gap-3 mb-4">
