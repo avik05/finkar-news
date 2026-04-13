@@ -42,7 +42,11 @@ export default function NewsFeed({ initialArticles, activeCategory, searchQuery 
             {displayedArticles.map((news) => (
               <NewsCard 
                 key={news.id} 
-                {...news} 
+                title={news.title}
+                source={news.source}
+                url={news.url}
+                summary={news.summary}
+                category={news.category}
                 timeAgo={formatTimeAgo(news.published_at)}
                 imageUrl={news.image_url || undefined} 
               />
