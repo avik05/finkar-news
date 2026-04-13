@@ -36,7 +36,6 @@ export default function NewsCard({
   source,
   url,
   summary,
-  sentiment,
   category,
   timeAgo,
   imageUrl,
