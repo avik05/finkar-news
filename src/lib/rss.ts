@@ -92,9 +92,10 @@ export async function fetchAndProcessFeeds(): Promise<ProcessedArticle[]> {
 
       return items
         .map((item) => {
+          const itemAny = item as any;
           if (!item.title || !item.link) return null;
 
-          const rawDesc = item.contentEncoded || item.description || "";
+          const rawDesc = (itemAny.contentEncoded || itemAny.description || itemAny.content || "") as string;
           const cleanedDesc = cleanHtml(rawDesc);
           let summary = cleanedDesc.length > 250 ? cleanedDesc.substring(0, 247) + "..." : cleanedDesc;
           if (summary.trim().length === 0) summary = item.title;
