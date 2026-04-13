@@ -6,9 +6,15 @@ export const maxDuration = 60; // Allow Vercel Edge/Serverless function up to 60
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request) {
-  // Simple auth check for cron jobs if deployed to Vercel
+  const { searchParams } = new URL(request.url);
+  const urlSecret = searchParams.get('secret');
   const authHeader = request.headers.get('authorization');
-  if (process.env.CRON_SECRET && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+
+  const isAuthorized = 
+    (process.env.CRON_SECRET && authHeader === `Bearer ${process.env.CRON_SECRET}`) ||
+    (process.env.CRON_SECRET && urlSecret === process.env.CRON_SECRET);
+
+  if (!isAuthorized) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
