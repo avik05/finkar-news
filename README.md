@@ -1,36 +1,58 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🗞️ Finkar News
 
-## Getting Started
+Finkar News is a production-ready, fully automated financial news aggregator. It fetchs, processes, and categorizes financial intelligence from the leading Indian and Global news sources in real-time.
 
-First, run the development server:
+## 🚀 Features
+
+- **Autonomous Pipeline**: Hourly automated fetching from 6+ major RSS streams (Mint, ET, CNBC, etc.).
+- **Intelligent Processing**: Automatic sentiment analysis and category classification (Markets, Economy, Companies, Global).
+- **Premium UI**: Ultra-clean, mobile-first dark theme built with Tailwind CSS v4 and Framer Motion.
+- **Smart Deduplication**: Multi-layer deduplication using URL uniqueness and title normalization.
+- **Supabase Integration**: Robust PostgreSQL storage with optimized indexes for high-speed news retrieval.
+
+## 🛠️ Tech Stack
+
+- **Framework**: Next.js 16 (App Router)
+- **Database**: Supabase (PostgreSQL)
+- **Styling**: Tailwind CSS v4
+- **Animations**: Framer Motion
+- **Icons**: Lucide React
+- **RSS Parsing**: rss-parser
+
+## 📦 Deployment Guide
+
+### 1. Supabase Setup
+1. Create a project at [supabase.com](https://supabase.com).
+2. Run the SQL schema in the `supabase_schema.sql` file in your Supabase SQL Editor.
+3. Obtain your `Project URL` and `Anon Key`.
+
+### 2. Deployment to Vercel
+1. Push this code to a GitHub repository.
+2. Connect the repository to [Vercel](https://vercel.com).
+3. Add the following Environment Variables in the Vercel Dashboard:
+   - `NEXT_PUBLIC_SUPABASE_URL`: Your Supabase Project URL.
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Your Supabase Anon Key.
+   - `CRON_SECRET`: A secure random string used to protect your cron endpoint.
+
+### 3. Automation (Vercel Cron)
+The project includes a `vercel.json` and an API route at `/api/cron/fetch-news`. Once deployed, Vercel will automatically trigger this route every hour to sync the latest financial news.
+
+## 💻 Local Development
 
 ```bash
+# Install dependencies
+npm install
+
+# Run the dev server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+
+# Manually trigger a news fetch (Local)
+# Create a .env.local with your credentials first
+npx tsx src/scripts/seed.ts
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🎯 Project Goals
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Clean Architecture**: Decoupled parsing logic from UI.
+- **Scalability**: Designed to handle thousands of articles with ease.
+- **Premium Feel**: Designed to behave like a top-tier financial cockpit.
