@@ -8,4 +8,5 @@ export interface NewsArticle {
   image_url: string | null;
   published_at: string;
   created_at: string;
+  tickers?: string[];
 }
