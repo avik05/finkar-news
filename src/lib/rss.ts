@@ -19,7 +19,7 @@ export const RSS_SOURCES = [
   { name: "TechCrunch AI", url: "https://techcrunch.com/category/artificial-intelligence/feed/" },
   { name: "Hugging Face", url: "https://huggingface.co/blog/feed.xml" },
   { name: "MIT Tech Review", url: "https://www.technologyreview.com/topic/artificial-intelligence/feed/" },
-  { name: "Wired AI", url: "https://www.wired.com/feed/tag/ai/latest/rss" },
+  { name: "VentureBeat AI", url: "https://venturebeat.com/category/ai/feed/" },
   { name: "TechBuzz AI", url: "https://www.techbuzz.ai/api/rss/articles" },
   { name: "Hacker News", url: "https://hnrss.org/frontpage?points=100" },
 ];
@@ -32,6 +32,7 @@ export interface ProcessedArticle {
   category: string;
   image_url: string | null;
   published_at: string;
+  tickers?: string[]; // Optional: detect and store tickers
 }
 
 const cleanHtml = (str: string) => {
@@ -45,8 +46,39 @@ const cleanHtml = (str: string) => {
     .replace(/&#39;/g, "'")
     .replace(/&nbsp;/g, " ")
     .replace(/\s+/g, " ")
+    .replace(/Read More.*/gi, "")
     .trim();
   return clean;
+};
+
+const extractSmartSummary = (text: string, title: string): string => {
+  if (!text || text.length < 10) return title;
+  
+  // Try to get the first couple of sentences
+  const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
+  let summary = "";
+  for (const sentence of sentences) {
+    if ((summary + sentence).length < 280) {
+      summary += " " + sentence;
+    } else {
+      break;
+    }
+  }
+  
+  summary = summary.trim();
+  if (summary.length < 50) return text.substring(0, 250) + "...";
+  return summary;
+};
+
+const detectTickers = (text: string): string[] => {
+  const tickers = new Set<string>();
+  // Match $SYMBOL or (SYMBOL) or [SYMBOL] where SYMBOL is 2-6 uppercase letters
+  const regex = /(?:\$|\()([A-Z]{2,6})(?:\)|)/g;
+  let match;
+  while ((match = regex.exec(text)) !== null) {
+    if (match[1]) tickers.add(match[1]);
+  }
+  return Array.from(tickers);
 };
 
 const extractImage = (item: any, rawDescription: string = ""): string | null => {
@@ -66,7 +98,7 @@ const extractImage = (item: any, rawDescription: string = ""): string | null => 
 const categorize = (title: string, summary: string, sourceName: string = ""): string => {
   const t = (title + " " + summary).toLowerCase();
   
-  const aiSources = ["TechCrunch AI", "Hugging Face", "MIT Tech Review", "Wired AI", "TechBuzz AI"];
+  const aiSources = ["TechCrunch AI", "Hugging Face", "MIT Tech Review", "VentureBeat AI", "TechBuzz AI"];
   if (aiSources.includes(sourceName)) return "AI Updates";
 
   const categories = {
@@ -97,8 +129,8 @@ export async function fetchAndProcessFeeds(): Promise<ProcessedArticle[]> {
 
           const rawDesc = (itemAny.contentEncoded || itemAny.description || itemAny.content || "") as string;
           const cleanedDesc = cleanHtml(rawDesc);
-          let summary = cleanedDesc.length > 250 ? cleanedDesc.substring(0, 247) + "..." : cleanedDesc;
-          if (summary.trim().length === 0) summary = item.title;
+          const summary = extractSmartSummary(cleanedDesc, item.title || "");
+          const tickers = detectTickers(item.title + " " + summary);
 
           let pubDate = new Date();
           if (item.pubDate) {
@@ -114,6 +146,7 @@ export async function fetchAndProcessFeeds(): Promise<ProcessedArticle[]> {
             category: categorize(item.title, summary, source.name),
             image_url: extractImage(item, rawDesc),
             published_at: pubDate.toISOString(),
+            tickers: tickers.length > 0 ? tickers : undefined,
           } as ProcessedArticle;
         })
         .filter((a): a is ProcessedArticle => a !== null);
@@ -126,15 +159,29 @@ export async function fetchAndProcessFeeds(): Promise<ProcessedArticle[]> {
   const results = await Promise.all(feedPromises);
   results.forEach((items) => allArticles.push(...items));
 
-  // Secondary memory deduplication (Title normalization check)
+  // Smart deduplication: normalize titles and group by similarity
   const deduped: ProcessedArticle[] = [];
-  const seenTitles = new Set<string>();
+  const seenTitles = new Map<string, ProcessedArticle>();
 
   for (const article of allArticles) {
-    const normalizedTitle = article.title.toLowerCase().replace(/[^a-z0-9]/g, "");
+    // Advanced normalization: remove "BREAKING", "EXCLUSIVE", etc.
+    const normalizedTitle = article.title
+      .toLowerCase()
+      .replace(/^(breaking|exclusive|update|just in|opinion|live):/i, "")
+      .replace(/[^a-z0-9]/g, "")
+      .trim();
+
     if (!seenTitles.has(normalizedTitle)) {
-      seenTitles.add(normalizedTitle);
+      seenTitles.set(normalizedTitle, article);
       deduped.push(article);
+    } else {
+      // If we have a duplicate, we keep the one with a better image or longer summary
+      const existing = seenTitles.get(normalizedTitle)!;
+      if (!existing.image_url && article.image_url) {
+        seenTitles.set(normalizedTitle, article);
+        const idx = deduped.indexOf(existing);
+        if (idx > -1) deduped[idx] = article;
+      }
     }
   }
 
