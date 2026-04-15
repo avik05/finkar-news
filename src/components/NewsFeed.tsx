@@ -2,21 +2,27 @@
 
 import NewsCard from "./NewsCard";
 import { NewsArticle } from "@/types";
-import { formatTimeAgo } from "@/utils/format";
+
+const CATEGORIES = ["All", "Markets", "Economy", "Companies", "Global"];
+
+function formatTimeAgo(dateString: string) {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / 60000);
+  
+  if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+  const diffInHours = Math.floor(diffInMinutes / 60);
+  if (diffInHours < 24) return `${diffInHours}h ago`;
+  return `${Math.floor(diffInHours / 24)}d ago`;
+}
 
 interface NewsFeedProps {
   initialArticles: NewsArticle[];
   activeCategory: string;
   searchQuery?: string;
-  onOpenFocus: (article: NewsArticle) => void;
 }
 
-export default function NewsFeed({ 
-  initialArticles, 
-  activeCategory, 
-  searchQuery,
-  onOpenFocus
-}: NewsFeedProps) {
+export default function NewsFeed({ initialArticles, activeCategory, searchQuery }: NewsFeedProps) {
   const displayedArticles = initialArticles;
 
   return (
@@ -42,9 +48,7 @@ export default function NewsFeed({
                 summary={news.summary}
                 category={news.category}
                 timeAgo={formatTimeAgo(news.published_at)}
-                imageUrl={news.image_url || undefined}
-                tickers={news.tickers}
-                onOpenFocus={() => onOpenFocus(news)}
+                imageUrl={news.image_url || undefined} 
               />
             ))}
           </div>

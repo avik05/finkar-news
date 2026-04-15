@@ -9,7 +9,6 @@ CREATE TABLE IF NOT EXISTS public.news_articles (
     sentiment TEXT CHECK (sentiment IN ('Positive', 'Negative', 'Neutral')),
     category TEXT CHECK (category IN ('Markets', 'Economy', 'AI Updates', 'Global')),
     image_url TEXT,
-    tickers TEXT[],
     published_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ DEFAULT now() NOT NULL
 );

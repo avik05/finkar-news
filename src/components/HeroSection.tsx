@@ -6,8 +6,16 @@ import { NewsArticle } from "@/types";
 import { TrendingUp, Clock, ChevronRight } from "lucide-react";
 import Image from "next/image";
 
-import { formatTimeAgo } from "@/utils/format";
-import { useUserStore } from "@/lib/userStore";
+function formatTimeAgo(dateString: string) {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / 60000);
+  
+  if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+  const diffInHours = Math.floor(diffInMinutes / 60);
+  if (diffInHours < 24) return `${diffInHours}h ago`;
+  return `${Math.floor(diffInHours / 24)}d ago`;
+}
 
 const SOURCE_LOGOS: Record<string, string> = {
   "Mint": "https://upload.wikimedia.org/wikipedia/commons/3/3a/Mint_%28newspaper%29_logo.svg",
@@ -19,29 +27,16 @@ const SOURCE_LOGOS: Record<string, string> = {
   "TechCrunch AI": "https://upload.wikimedia.org/wikipedia/commons/b/b1/TechCrunch_logo.svg",
   "Hugging Face": "https://huggingface.co/front/assets/huggingface_logo-noborder.svg",
   "MIT Tech Review": "https://upload.wikimedia.org/wikipedia/commons/e/e0/MIT_Technology_Review_modern_logo.svg",
-  "VentureBeat AI": "https://logo.clearbit.com/venturebeat.com?size=512",
+  "Wired AI": "https://upload.wikimedia.org/wikipedia/commons/9/95/Wired_logo.svg",
   "TechBuzz AI": "https://logo.clearbit.com/techbuzz.ai?size=512",
   "Hacker News": "https://upload.wikimedia.org/wikipedia/commons/b/b2/Y_Combinator_logo.svg",
 };
 
-export default function HeroSection({ 
-  articles, 
-  onOpenFocus 
-}: { 
-  articles: NewsArticle[], 
-  onOpenFocus: (article: NewsArticle) => void 
-}) {
-  const { markAsRead } = useUserStore();
-
+export default function HeroSection({ articles }: { articles: NewsArticle[] }) {
   if (!articles || articles.length === 0) return null;
 
   const mainArticle = articles[0];
   const sideArticles = articles.slice(1, 3);
-
-  const handleArticleClick = (article: NewsArticle) => {
-    markAsRead(article.url);
-    onOpenFocus(article);
-  };
   const sourceLogo = SOURCE_LOGOS[mainArticle.source] || `https://logo.clearbit.com/${mainArticle.source.toLowerCase().replace(/\s+/g, '')}.com?size=512`;
 
   return (
@@ -61,11 +56,13 @@ export default function HeroSection({
         
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8">
           {/* Main Feature */}
-          <motion.div
-            onClick={() => handleArticleClick(mainArticle)}
+          <motion.a
+            href={mainArticle.url}
+            target="_blank"
+            rel="noopener noreferrer"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="lg:col-span-8 group relative flex flex-col justify-end min-h-[400px] md:min-h-[550px] rounded-3xl overflow-hidden bg-card border border-border cursor-pointer"
+            className="lg:col-span-8 group relative flex flex-col justify-end min-h-[400px] md:min-h-[550px] rounded-3xl overflow-hidden bg-card border border-border"
           >
             {mainArticle.image_url ? (
               <Image
@@ -119,17 +116,19 @@ export default function HeroSection({
                 <ChevronRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
               </div>
             </div>
-          </motion.div>
+          </motion.a>
 
           {/* Side Panel */}
           <div className="lg:col-span-4 flex flex-col gap-6">
             {sideArticles.map((article, idx) => (
-              <motion.div
+              <motion.a
                 key={article.id}
-                onClick={() => handleArticleClick(article)}
+                href={article.url}
+                target="_blank"
+                rel="noopener noreferrer"
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0, transition: { delay: 0.1 * (idx + 1) } }}
-                className="flex-1 group bg-card border border-border p-6 rounded-[2rem] hover:border-muted transition-all hover:shadow-xl cursor-pointer"
+                className="flex-1 group bg-card border border-border p-6 rounded-[2rem] hover:border-muted transition-all hover:shadow-xl"
               >
                 <div className="flex items-center gap-2 mb-3">
                   <span className="text-[10px] font-black text-muted uppercase tracking-widest">{article.source}</span>
@@ -144,7 +143,7 @@ export default function HeroSection({
                   <span>{formatTimeAgo(article.published_at)}</span>
                   <span className="text-accent group-hover:underline underline-offset-4">Insights</span>
                 </div>
-              </motion.div>
+              </motion.a>
             ))}
             
             {/* Minimal Stock Pulse / Market Status indicator */}
