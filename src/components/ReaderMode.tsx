@@ -59,6 +59,12 @@ export default function ReaderMode({ url, isOpen, onClose }: ReaderModeProps) {
     setError(null);
     try {
       const response = await fetch(`/api/scrape?url=${encodeURIComponent(url)}`);
+      
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        throw new Error("Intelligence system is still deploying or unreachable. Please refresh in a moment.");
+      }
+
       const data = await response.json();
       if (data.error) throw new Error(data.error);
       

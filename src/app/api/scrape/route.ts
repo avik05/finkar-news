@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { JSDOM } from "jsdom";
 import { Readability } from "@mozilla/readability";
 
+export const dynamic = "force-dynamic";
+export const maxDuration = 30; // Increase timeout for slow news sites
+
 export async function GET(request: NextRequest) {
   const url = request.nextUrl.searchParams.get("url");
 
