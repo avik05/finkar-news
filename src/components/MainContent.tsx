@@ -5,13 +5,18 @@ import { AnimatePresence, motion } from "framer-motion";
 import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
 import NewsFeed from "@/components/NewsFeed";
+import ReaderMode from "@/components/ReaderMode";
+import QuickAccess from "@/components/QuickAccess";
+import DailyBriefs from "@/components/DailyBriefs";
 import { NewsArticle } from "@/types";
+import { useReaderStore } from "@/lib/readerStore";
 
 interface MainContentProps {
   articles: NewsArticle[];
 }
 
 export default function MainContent({ articles }: MainContentProps) {
+  const { isOpen, url, closeReader } = useReaderStore();
   const [activeCategory, setActiveCategory] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -27,8 +32,8 @@ export default function MainContent({ articles }: MainContentProps) {
   });
 
   const showHero = activeCategory === "All" && searchQuery === "";
-  const heroArticles = articles.slice(0, 3); // Hero always shows the top 3 global highlights
-  const feedArticles = showHero ? filteredArticles.slice(3) : filteredArticles;
+  const heroArticles = articles.slice(0, 15); // Increased to support main + side carousels
+  const feedArticles = showHero ? filteredArticles.slice(15) : filteredArticles;
 
   return (
     <>
@@ -48,10 +53,22 @@ export default function MainContent({ articles }: MainContentProps) {
               transition={{ duration: 0.5, ease: "easeInOut" }}
               className="overflow-hidden"
             >
-              <HeroSection articles={heroArticles} />
+              <HeroSection articles={articles} />
             </motion.div>
           )}
         </AnimatePresence>
+        
+        <QuickAccess 
+          activeCategory={activeCategory} 
+          onCategorySelect={setActiveCategory} 
+        />
+        
+            {/* Daily Briefs Section - Exclusively NewsBytes for perfect Inshorts experience */}
+            <DailyBriefs articles={
+              articles.filter(a => a.source === 'NewsBytes').length > 0
+                ? articles.filter(a => a.source === 'NewsBytes').slice(0, 20)
+                : articles.slice(20, 35)
+            } />
         
         <NewsFeed 
           initialArticles={feedArticles} 
@@ -59,6 +76,8 @@ export default function MainContent({ articles }: MainContentProps) {
           searchQuery={searchQuery}
         />
       </main>
+
+      <ReaderMode isOpen={isOpen} url={url} onClose={closeReader} />
       
       <footer className="border-t border-border bg-card py-12 text-center text-muted transition-colors duration-300">
         <div className="max-w-7xl mx-auto px-4">

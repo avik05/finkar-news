@@ -64,3 +64,57 @@ h1, h2, h3, h4, .font-serif {
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
+/* Custom Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--muted);
+}
+
+/* Reader Mode Typography Refinements */
+.prose h1, .prose h2, .prose h3 {
+  font-family: var(--font-serif);
+  letter-spacing: -0.01em;
+  margin-top: 2em;
+  margin-bottom: 1em;
+}
+
+.prose p {
+  margin-bottom: 1.5em;
+  line-height: 1.8;
+}
+
+.prose img {
+  border-radius: 1.5rem;
+  margin: 3em 0;
+  box-shadow: 0 20px 40px -10px rgba(0,0,0,0.3);
+}
+
+.prose blockquote {
+  border-left: 4px solid var(--accent);
+  padding-left: 2em;
+  font-style: italic;
+  color: var(--muted);
+  margin: 3em 0;
+}
+
+/* Hide scrollbar but allow scrolling */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

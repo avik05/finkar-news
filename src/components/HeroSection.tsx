@@ -1,10 +1,11 @@
 "use client";
 
-import { motion } from "framer-motion";
-import NewsCard from "./NewsCard";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { NewsArticle } from "@/types";
-import { TrendingUp, Clock, ChevronRight } from "lucide-react";
+import { Clock, BookOpen, ChevronLeft, ChevronRight, Globe, Cpu } from "lucide-react";
 import Image from "next/image";
+import { useReaderStore } from "@/lib/readerStore";
 
 function formatTimeAgo(dateString: string) {
   const date = new Date(dateString);
@@ -17,137 +18,200 @@ function formatTimeAgo(dateString: string) {
   return `${Math.floor(diffInHours / 24)}d ago`;
 }
 
-const SOURCE_LOGOS: Record<string, string> = {
-  "Mint": "https://upload.wikimedia.org/wikipedia/commons/3/3a/Mint_%28newspaper%29_logo.svg",
-  "Economic Times": "https://upload.wikimedia.org/wikipedia/commons/c/c5/The_Economic_Times_logo.svg",
-  "Business Standard": "https://upload.wikimedia.org/wikipedia/commons/b/b5/Business_Standard_logo.svg",
-  "Financial Express": "https://upload.wikimedia.org/wikipedia/commons/9/9f/The_Financial_Express_%28India%29_Logo.svg",
-  "Reuters": "https://upload.wikimedia.org/wikipedia/commons/b/ba/Reuters_logo_2024.svg",
-  "CNBC": "https://upload.wikimedia.org/wikipedia/commons/e/e3/CNBC_logo.svg",
-  "TechCrunch AI": "https://upload.wikimedia.org/wikipedia/commons/b/b1/TechCrunch_logo.svg",
-  "Hugging Face": "https://huggingface.co/front/assets/huggingface_logo-noborder.svg",
-  "MIT Tech Review": "https://upload.wikimedia.org/wikipedia/commons/e/e0/MIT_Technology_Review_modern_logo.svg",
-  "Wired AI": "https://upload.wikimedia.org/wikipedia/commons/9/95/Wired_logo.svg",
-  "TechBuzz AI": "https://logo.clearbit.com/techbuzz.ai?size=512",
-  "Hacker News": "https://upload.wikimedia.org/wikipedia/commons/b/b2/Y_Combinator_logo.svg",
-};
+interface CarouselProps {
+  articles: NewsArticle[];
+  height: string;
+  autoPlayInterval?: number;
+  showIndicators?: boolean;
+  isSmall?: boolean;
+  className?: string;
+  categoryIcon?: any;
+}
+
+function HeroCarousel({ 
+  articles, 
+  height, 
+  autoPlayInterval = 6000, 
+  showIndicators = true, 
+  isSmall = false,
+  className = "",
+  categoryIcon: Icon
+}: CarouselProps) {
+  const { openReader } = useReaderStore();
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    if (articles.length <= 1) return;
+    const timer = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % articles.length);
+    }, autoPlayInterval);
+    return () => clearInterval(timer);
+  }, [articles.length, autoPlayInterval]);
+
+  if (!articles || articles.length === 0) return null;
+
+  const currentArticle = articles[currentIndex];
+
+  const categoryFallbacks: Record<string, string> = {
+    "Markets": "/assets/market_fallback.png",
+    "AI Updates": "/assets/ai_fallback.png",
+    "Economy": "/assets/market_fallback.png",
+    "Global": "/assets/global_fallback.png",
+  };
+
+  const fallbackImage = categoryFallbacks[currentArticle.category] || "/assets/market_fallback.png";
+
+  return (
+    <div className={`relative ${height} w-full rounded-[2rem] md:rounded-[2.5rem] overflow-hidden group shadow-2xl shadow-black/20 bg-zinc-950 border border-border ${className}`}>
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={currentArticle.id}
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -20 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          onClick={() => openReader(currentArticle.url)}
+          className="absolute inset-0 cursor-pointer"
+        >
+          {/* Main Background Image or Premium Fallback */}
+          <div className="absolute inset-0">
+            <Image
+              src={currentArticle.image_url || fallbackImage}
+              alt={currentArticle.title}
+              fill
+              className={`object-cover ${currentArticle.image_url ? 'opacity-60' : 'opacity-40'} transition-transform duration-[10s] ease-linear scale-100 group-hover:scale-110`}
+              priority={currentIndex === 0}
+            />
+          </div>
+          
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent"></div>
+          
+          {/* Top Label for Side Banners */}
+          {isSmall && Icon && (
+            <div className="absolute top-4 left-6 flex items-center gap-2 bg-black/40 backdrop-blur-md border border-white/10 px-3 py-1 rounded-full z-20">
+              <Icon className="w-3 h-3 text-accent" />
+              <span className="text-[8px] font-black uppercase tracking-widest text-white">{currentArticle.category}</span>
+            </div>
+          )}
+
+          <div className={`absolute bottom-0 left-0 w-full flex flex-col justify-end gap-4 z-10 ${isSmall ? "p-4 md:p-6" : "p-6 md:p-10"}`}>
+            <div>
+              <div className={`flex items-center gap-3 ${isSmall ? "mb-1" : "mb-2"}`}>
+                {!isSmall && (
+                  <span className="px-2 py-0.5 rounded-full bg-accent text-white text-[7px] font-black uppercase tracking-widest">
+                    {currentArticle.category}
+                  </span>
+                )}
+                <span className="text-[8px] text-white/60 font-bold uppercase tracking-widest flex items-center gap-1">
+                  <Clock className="w-2.5 h-2.5" />
+                  {formatTimeAgo(currentArticle.published_at)}
+                </span>
+              </div>
+              
+              <h2 className={`font-serif font-bold text-white leading-tight mb-2 tracking-editorial line-clamp-2 ${isSmall ? "text-base md:text-xl" : "text-xl sm:text-2xl md:text-4xl lg:text-5xl"}`}>
+                {currentArticle.title}
+              </h2>
+              
+              <p className={`text-white/60 font-medium font-serif italic leading-relaxed hidden md:line-clamp-2 ${isSmall ? "text-[10px]" : "text-xs md:text-sm"}`}>
+                {currentArticle.summary}
+              </p>
+            </div>
+
+            <div className={`flex items-center justify-between ${isSmall ? "mt-1" : "mt-2"}`}>
+              <div className={`flex items-center gap-2 text-white/40 font-black uppercase tracking-[0.2em] transition-all ${isSmall ? "text-[6px]" : "text-[8px]"} opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 duration-500`}>
+                <BookOpen className={isSmall ? "w-2.5 h-2.5" : "w-3.5 h-3.5"} />
+                <span>Tap to Read</span>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      </AnimatePresence>
+
+      {/* Navigation - Minimal */}
+      <div className="absolute top-4 right-4 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity z-30">
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            setCurrentIndex((prev) => (prev - 1 + articles.length) % articles.length);
+          }}
+          className="p-1.5 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-white hover:bg-white hover:text-black transition-all"
+        >
+          <ChevronLeft className="w-3 h-3" />
+        </button>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            setCurrentIndex((prev) => (prev + 1) % articles.length);
+          }}
+          className="p-1.5 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-white hover:bg-white hover:text-black transition-all"
+        >
+          <ChevronRight className="w-3 h-3" />
+        </button>
+      </div>
+
+      {/* Indicators */}
+      {showIndicators && articles.length > 1 && (
+        <div className="absolute bottom-4 left-6 flex items-center gap-1.5 z-20">
+          {articles.map((_, idx) => (
+            <button
+              key={idx}
+              onClick={() => setCurrentIndex(idx)}
+              className={`transition-all duration-500 rounded-full ${
+                currentIndex === idx ? "w-6 h-1 bg-accent" : "w-1 h-1 bg-white/30"
+              }`}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function HeroSection({ articles }: { articles: NewsArticle[] }) {
   if (!articles || articles.length === 0) return null;
 
-  const mainArticle = articles[0];
-  const sideArticles = articles.slice(1, 3);
-  const sourceLogo = SOURCE_LOGOS[mainArticle.source] || `https://logo.clearbit.com/${mainArticle.source.toLowerCase().replace(/\s+/g, '')}.com?size=512`;
+  // Specific pools for main, global, and AI news from the full set
+  const mainPool = articles.slice(0, 15);
+  const globalPool = articles.filter(a => a.category === "Global").slice(0, 10);
+  const aiPool = articles.filter(a => a.category === "AI Updates").slice(0, 10);
+
+  // Fallbacks if categories are empty
+  const sidePool1 = globalPool.length > 0 ? globalPool : articles.slice(5, 10);
+  const sidePool2 = aiPool.length > 0 ? aiPool : articles.slice(10, 15);
 
   return (
-    <section className="py-8 md:py-12 border-b border-border bg-background transition-colors duration-300">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <div className="flex items-center gap-2 text-accent mb-2">
-              <TrendingUp className="w-4 h-4" />
-              <span className="text-xs font-bold uppercase tracking-widest">Featured Intelligence</span>
-            </div>
-            <h1 className="text-3xl md:text-5xl font-serif font-black tracking-editorial leading-tight">
-              Market <span className="text-muted italic">Spotlight</span>
-            </h1>
-          </div>
-        </div>
-        
+    <section className="relative py-8 md:py-12 overflow-hidden bg-background">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8">
-          {/* Main Feature */}
-          <motion.a
-            href={mainArticle.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="lg:col-span-8 group relative flex flex-col justify-end min-h-[400px] md:min-h-[550px] rounded-3xl overflow-hidden bg-card border border-border"
-          >
-            {mainArticle.image_url ? (
-              <Image
-                src={mainArticle.image_url}
-                alt={mainArticle.title}
-                fill
-                className="object-cover opacity-60 group-hover:opacity-70 group-hover:scale-105 transition-all duration-700"
-              />
-            ) : (
-              <div className="absolute inset-0 bg-neutral-900 overflow-hidden">
-                {/* Large Background Watermark */}
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] opacity-[0.05] grayscale brightness-0 invert pointer-events-none">
-                  <Image 
-                    src={sourceLogo} 
-                    alt="" 
-                    fill 
-                    className="object-contain p-24"
-                    unoptimized 
-                  />
-                </div>
-                {/* Mesh Gradient */}
-                <div className="absolute inset-0 opacity-40 mix-blend-overlay pointer-events-none" 
-                     style={{ background: 'radial-gradient(circle at 0% 0%, var(--accent) 0%, transparent 50%), radial-gradient(circle at 100% 100%, #22c55e 0%, transparent 50%)' }}>
-                </div>
-                {/* Tech Grid */}
-                <div className="absolute inset-0 opacity-5 pointer-events-none" 
-                     style={{ backgroundImage: `radial-gradient(var(--border) 1px, transparent 0)`, backgroundSize: '40px 40px' }}>
-                </div>
-              </div>
-            )}
-            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent"></div>
-            
-            <div className="relative p-6 md:p-10 z-10 transition-colors duration-300">
-              <div className="flex items-center gap-3 mb-4">
-                <span className="px-3 py-1 rounded-full bg-accent/20 text-accent text-[10px] font-black uppercase tracking-[0.2em] border border-accent/30">
-                  {mainArticle.category}
-                </span>
-                <span className="flex items-center gap-1.5 text-xs text-muted font-medium">
-                  <Clock className="w-3 h-3" />
-                  {formatTimeAgo(mainArticle.published_at)}
-                </span>
-              </div>
-              <h2 className="text-3xl md:text-5xl font-serif font-bold text-white leading-[1.1] mb-6 tracking-editorial group-hover:underline decoration-accent/50 underline-offset-8 decoration-2">
-                {mainArticle.title}
-              </h2>
-              <p className="text-white/80 text-lg max-w-2xl line-clamp-2 font-medium mb-6 leading-relaxed">
-                {mainArticle.summary}
-              </p>
-              <div className="flex items-center gap-2 text-white font-bold text-sm tracking-wide group/btn">
-                <span>Read Analysis</span>
-                <ChevronRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
-              </div>
-            </div>
-          </motion.a>
+          {/* Main Hero Carousel - All News */}
+          <div className="lg:col-span-8">
+            <HeroCarousel 
+              articles={mainPool} 
+              height="h-[450px] md:h-[550px]" 
+              autoPlayInterval={6000}
+            />
+          </div>
 
-          {/* Side Panel */}
-          <div className="lg:col-span-4 flex flex-col gap-6">
-            {sideArticles.map((article, idx) => (
-              <motion.a
-                key={article.id}
-                href={article.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0, transition: { delay: 0.1 * (idx + 1) } }}
-                className="flex-1 group bg-card border border-border p-6 rounded-[2rem] hover:border-muted transition-all hover:shadow-xl"
-              >
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="text-[10px] font-black text-muted uppercase tracking-widest">{article.source}</span>
-                </div>
-                <h3 className="text-xl font-serif font-bold leading-snug mb-3 group-hover:text-accent transition-colors tracking-editorial">
-                  {article.title}
-                </h3>
-                <p className="text-sm text-muted line-clamp-2 leading-relaxed mb-4">
-                  {article.summary}
-                </p>
-                <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-muted mt-auto">
-                  <span>{formatTimeAgo(article.published_at)}</span>
-                  <span className="text-accent group-hover:underline underline-offset-4">Insights</span>
-                </div>
-              </motion.a>
-            ))}
-            
-            {/* Minimal Stock Pulse / Market Status indicator */}
-            {/* Market Status removed as per user request */}
+          {/* Side Hero Banners */}
+          <div className="lg:col-span-4 flex flex-col gap-6 md:gap-8">
+            {/* Global News Carousel */}
+            <HeroCarousel 
+              articles={sidePool1} 
+              height="h-[210px] md:h-[260px]" 
+              autoPlayInterval={8000}
+              showIndicators={false}
+              isSmall={true}
+              categoryIcon={Globe}
+            />
+            {/* AI News Carousel */}
+            <HeroCarousel 
+              articles={sidePool2} 
+              height="h-[210px] md:h-[260px]" 
+              autoPlayInterval={10000}
+              showIndicators={false}
+              isSmall={true}
+              categoryIcon={Cpu}
+            />
           </div>
         </div>
       </div>

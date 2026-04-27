@@ -22,6 +22,10 @@ export const RSS_SOURCES = [
   { name: "Wired AI", url: "https://www.wired.com/feed/tag/ai/latest/rss" },
   { name: "TechBuzz AI", url: "https://www.techbuzz.ai/api/rss/articles" },
   { name: "Hacker News", url: "https://hnrss.org/frontpage?points=100" },
+  { name: "NewsBytes", url: "https://www.newsbytesapp.com/rss/india" },
+  { name: "NewsBytes", url: "https://www.newsbytesapp.com/rss/business" },
+  { name: "NewsBytes", url: "https://www.newsbytesapp.com/rss/science" },
+  { name: "NewsBytes", url: "https://www.newsbytesapp.com/rss/sports" },
 ];
 
 export interface ProcessedArticle {
@@ -97,7 +101,22 @@ export async function fetchAndProcessFeeds(): Promise<ProcessedArticle[]> {
 
           const rawDesc = (itemAny.contentEncoded || itemAny.description || itemAny.content || "") as string;
           const cleanedDesc = cleanHtml(rawDesc);
-          let summary = cleanedDesc.length > 250 ? cleanedDesc.substring(0, 247) + "..." : cleanedDesc;
+          
+          let summary = cleanedDesc;
+          
+          // For NewsBytes, we want the FULL content as it's already a brief
+          if (source.name === "NewsBytes") {
+            summary = cleanedDesc;
+          } else if (summary.length > 600) {
+            summary = summary.substring(0, 597).trim();
+            const lastPeriod = summary.lastIndexOf('.');
+            if (lastPeriod > 400) {
+              summary = summary.substring(0, lastPeriod + 1);
+            } else {
+              summary = summary + "...";
+            }
+          }
+          
           if (summary.trim().length === 0) summary = item.title;
 
           let pubDate = new Date();

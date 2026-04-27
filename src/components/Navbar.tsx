@@ -18,7 +18,7 @@ interface NavbarProps {
 export default function Navbar({ activeCategory, setActiveCategory, searchQuery, setSearchQuery }: NavbarProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const { theme, toggleTheme } = useThemeStore();
+  const { theme, setTheme } = useThemeStore();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -32,7 +32,7 @@ export default function Navbar({ activeCategory, setActiveCategory, searchQuery,
   };
 
   return (
-    <nav className="sticky top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur-md">
+    <nav className="sticky top-0 z-50 w-full border-b border-border bg-background/60 backdrop-blur-2xl transition-all duration-500">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center">
@@ -56,25 +56,50 @@ export default function Navbar({ activeCategory, setActiveCategory, searchQuery,
               <button
                 key={cat}
                 onClick={() => setActiveCategory(cat)}
-                className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${
+                className={`relative px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all duration-500 overflow-hidden ${
                   activeCategory === cat 
-                    ? "bg-accent text-white shadow-lg shadow-accent/20" 
-                    : "text-muted hover:text-foreground hover:bg-card/50"
+                    ? "text-white" 
+                    : "text-muted hover:text-foreground"
                 }`}
               >
-                {cat}
+                {activeCategory === cat && (
+                  <motion.div
+                    layoutId="activeCategory"
+                    className="absolute inset-0 bg-accent shadow-lg shadow-accent/20 z-0"
+                    transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                  />
+                )}
+                <span className="relative z-10">{cat}</span>
               </button>
             ))}
+            
+            <Link
+              href="/briefs"
+              className="flex items-center gap-2 px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-widest text-muted hover:text-accent transition-all border border-transparent hover:border-accent/30"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              Daily Brief
+            </Link>
           </div>
 
           <div className="hidden md:flex items-center gap-4">
-            <button 
-              onClick={toggleTheme}
-              className="p-2 text-muted hover:text-foreground transition-colors rounded-full hover:bg-card border border-transparent hover:border-border"
-              title="Switch Theme"
-            >
-              {mounted ? getThemeIcon() : <div className="w-5 h-5" />}
-            </button>
+            {/* Theme Selector - Reader Mode Style */}
+            <div className="flex items-center gap-1.5 p-1 bg-black/5 dark:bg-white/5 rounded-full border border-border/50">
+              {(["light", "dark", "paper"] as const).map((t) => (
+                <button
+                  key={t}
+                  onClick={() => setTheme(t)}
+                  className={`w-6 h-6 rounded-full border-2 transition-all ${
+                    theme === t 
+                      ? "border-accent scale-110 shadow-lg" 
+                      : "border-transparent opacity-50 hover:opacity-100"
+                  } ${
+                    t === "light" ? "bg-white" : t === "dark" ? "bg-zinc-900" : "bg-[#f4ecd8]"
+                  }`}
+                  title={`${t.charAt(0).toUpperCase() + t.slice(1)} Mode`}
+                />
+              ))}
+            </div>
             
             <div className="flex items-center">
               <AnimatePresence>
@@ -114,12 +139,22 @@ export default function Navbar({ activeCategory, setActiveCategory, searchQuery,
           </div>
 
           <div className="flex md:hidden items-center gap-2">
-            <button 
-              onClick={toggleTheme}
-              className="p-2 text-muted hover:text-foreground"
-            >
-              {mounted ? getThemeIcon() : <div className="w-5 h-5" />}
-            </button>
+            {/* Mobile Theme Selector */}
+            <div className="flex items-center gap-2 p-1 bg-black/5 dark:bg-white/5 rounded-full border border-border/50 scale-90">
+              {(["light", "dark", "paper"] as const).map((t) => (
+                <button
+                  key={t}
+                  onClick={() => setTheme(t)}
+                  className={`w-7 h-7 rounded-full border-2 transition-all ${
+                    theme === t 
+                      ? "border-accent shadow-lg" 
+                      : "border-transparent opacity-50"
+                  } ${
+                    t === "light" ? "bg-white" : t === "dark" ? "bg-zinc-900" : "bg-[#f4ecd8]"
+                  }`}
+                />
+              ))}
+            </div>
             <button
               onClick={() => setIsOpen(!isOpen)}
               className="p-2 text-muted hover:text-foreground"
@@ -139,6 +174,14 @@ export default function Navbar({ activeCategory, setActiveCategory, searchQuery,
             className="md:hidden border-t border-border bg-background"
           >
             <div className="px-4 pt-2 pb-4 space-y-1">
+              <Link
+                href="/briefs"
+                onClick={() => setIsOpen(false)}
+                className="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-black uppercase tracking-widest text-accent bg-accent/5 border border-accent/10 mb-2"
+              >
+                <Sparkles className="w-4 h-4" />
+                Daily Brief
+              </Link>
               {CATEGORIES.map((cat) => (
                 <button
                   key={cat}

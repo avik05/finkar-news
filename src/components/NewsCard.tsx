@@ -4,6 +4,8 @@ import { motion } from "framer-motion";
 import { ExternalLink, Clock } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
+import { useReaderStore } from "@/lib/readerStore";
+import { BookOpen } from "lucide-react";
 
 interface NewsCardProps {
   title: string;
@@ -41,21 +43,20 @@ export default function NewsCard({
   imageUrl,
   isFeatured = false,
 }: NewsCardProps) {
+  const { openReader } = useReaderStore();
   const [isLoaded, setIsLoaded] = useState(false);
   const [logoError, setLogoError] = useState(false);
 
   const sourceLogo = SOURCE_LOGOS[source] || `https://logo.clearbit.com/${source.toLowerCase().replace(/\s+/g, '')}.com?size=512`;
 
   return (
-    <motion.a
-      href={url}
-      target="_blank"
-      rel="noopener noreferrer"
+    <motion.div
       whileHover={{ y: -4 }}
       initial={{ opacity: 0, y: 10 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      className={`group flex flex-col bg-card border border-border rounded-3xl overflow-hidden hover:border-muted transition-all duration-300 hover:shadow-lg ${
+      onClick={() => openReader(url)}
+      className={`group flex flex-col bg-card border border-border rounded-3xl overflow-hidden hover:border-muted transition-all duration-300 hover:shadow-lg cursor-pointer ${
         isFeatured ? "md:flex-row md:col-span-2 lg:col-span-3 min-h-[350px]" : "h-full"
       }`}
     >
@@ -116,9 +117,12 @@ export default function NewsCard({
               {timeAgo}
             </span>
           </div>
-          <ExternalLink className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-all transform translate-x-1 group-hover:translate-x-0" />
+          <div className="flex items-center gap-2 text-accent opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-2 group-hover:translate-x-0">
+            <span className="text-[9px]">Tap to Read</span>
+            <BookOpen className="w-3 h-3" />
+          </div>
         </div>
       </div>
-    </motion.a>
+    </motion.div>
   );
 }
