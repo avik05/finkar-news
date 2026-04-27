@@ -75,12 +75,12 @@ export default function DailyBriefs({ articles }: DailyBriefsProps) {
 
                 {/* Content: Maximized for text */}
                 <div className="absolute inset-0 p-10 md:p-14 flex flex-col h-full">
-                  <h3 className="text-3xl md:text-4xl font-serif font-black text-white mb-6 leading-[1.1] tracking-tight shrink-0">
+                  <h3 className="text-2xl md:text-4xl font-serif font-black text-white mb-6 leading-[1.1] tracking-tight shrink-0">
                     {article.title}
                   </h3>
 
                   <div className="flex-grow overflow-y-auto no-scrollbar pr-2">
-                    <p className="text-lg md:text-xl text-white/90 leading-relaxed font-medium text-justify">
+                    <p className="text-base md:text-lg text-white/90 leading-relaxed font-medium text-justify line-clamp-[12] md:line-clamp-none">
                       {article.summary}
                     </p>
                   </div>

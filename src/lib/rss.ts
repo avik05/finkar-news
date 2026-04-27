@@ -25,7 +25,6 @@ export const RSS_SOURCES = [
   { name: "NewsBytes", url: "https://www.newsbytesapp.com/rss/india" },
   { name: "NewsBytes", url: "https://www.newsbytesapp.com/rss/business" },
   { name: "NewsBytes", url: "https://www.newsbytesapp.com/rss/science" },
-  { name: "NewsBytes", url: "https://www.newsbytesapp.com/rss/sports" },
 ];
 
 export interface ProcessedArticle {

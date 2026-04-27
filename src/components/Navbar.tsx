@@ -26,7 +26,7 @@ export default function Navbar({ activeCategory, setActiveCategory, searchQuery,
   }, []);
 
   const getThemeIcon = () => {
-    if (theme === "dark") return <Moon className="w-5 h-5" />;
+    if (theme === "black") return <Moon className="w-5 h-5" />;
     if (theme === "light") return <Sun className="w-5 h-5" />;
     return <Sparkles className="w-5 h-5" />;
   };
@@ -85,7 +85,7 @@ export default function Navbar({ activeCategory, setActiveCategory, searchQuery,
           <div className="hidden md:flex items-center gap-4">
             {/* Theme Selector - Reader Mode Style */}
             <div className="flex items-center gap-1.5 p-1 bg-black/5 dark:bg-white/5 rounded-full border border-border/50">
-              {(["light", "dark", "paper"] as const).map((t) => (
+              {(["light", "black", "paper"] as const).map((t) => (
                 <button
                   key={t}
                   onClick={() => setTheme(t)}
@@ -94,7 +94,7 @@ export default function Navbar({ activeCategory, setActiveCategory, searchQuery,
                       ? "border-accent scale-110 shadow-lg" 
                       : "border-transparent opacity-50 hover:opacity-100"
                   } ${
-                    t === "light" ? "bg-white" : t === "dark" ? "bg-zinc-900" : "bg-[#f4ecd8]"
+                    t === "light" ? "bg-white" : t === "black" ? "bg-zinc-900" : "bg-[#f4ecd8]"
                   }`}
                   title={`${t.charAt(0).toUpperCase() + t.slice(1)} Mode`}
                 />
@@ -141,7 +141,7 @@ export default function Navbar({ activeCategory, setActiveCategory, searchQuery,
           <div className="flex md:hidden items-center gap-2">
             {/* Mobile Theme Selector */}
             <div className="flex items-center gap-2 p-1 bg-black/5 dark:bg-white/5 rounded-full border border-border/50 scale-90">
-              {(["light", "dark", "paper"] as const).map((t) => (
+              {(["light", "black", "paper"] as const).map((t) => (
                 <button
                   key={t}
                   onClick={() => setTheme(t)}
@@ -150,7 +150,7 @@ export default function Navbar({ activeCategory, setActiveCategory, searchQuery,
                       ? "border-accent shadow-lg" 
                       : "border-transparent opacity-50"
                   } ${
-                    t === "light" ? "bg-white" : t === "dark" ? "bg-zinc-900" : "bg-[#f4ecd8]"
+                    t === "light" ? "bg-white" : t === "black" ? "bg-zinc-900" : "bg-[#f4ecd8]"
                   }`}
                 />
               ))}

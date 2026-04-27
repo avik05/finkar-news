@@ -47,12 +47,32 @@ export default function ReaderMode({ url, isOpen, onClose }: ReaderModeProps) {
   useEffect(() => {
     if (isOpen && url) {
       fetchContent();
+      // Push state to history to enable back gesture to close modal
+      window.history.pushState({ readerOpen: true }, "");
     } else {
       stopSpeaking();
       setContent(null);
       setError(null);
     }
+
+    const handlePopState = (event: PopStateEvent) => {
+      if (isOpen) {
+        onClose();
+      }
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
   }, [isOpen, url]);
+
+  const handleClose = () => {
+    if (isOpen) {
+      // If we're closing via button, we need to go back in history 
+      // to remove the state we pushed, so the NEXT back gesture works right.
+      window.history.back();
+      onClose();
+    }
+  };
 
   const fetchContent = async () => {
     setLoading(true);
@@ -90,15 +110,32 @@ export default function ReaderMode({ url, isOpen, onClose }: ReaderModeProps) {
     }
   };
 
+  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
+
+  useEffect(() => {
+    const loadVoices = () => {
+      const availableVoices = window.speechSynthesis.getVoices();
+      setVoices(availableVoices);
+    };
+    loadVoices();
+    window.speechSynthesis.onvoiceschanged = loadVoices;
+  }, []);
+
+  const getBestVoice = () => {
+    const priorities = ["Google US English", "Google UK English Female", "Samantha", "Victoria", "Microsoft Aria"];
+    for (const name of priorities) {
+      const voice = voices.find(v => v.name.includes(name));
+      if (voice) return voice;
+    }
+    return voices.find(v => v.lang.startsWith("en")) || voices[0];
+  };
+
   const startSpeaking = () => {
     if (!content) return;
     stopSpeaking();
     
     const fullText = `${content.title}. By ${content.byline || content.siteName}. ${content.content.replace(/<[^>]*>/g, ' ')}`;
-    
-    // Split text into chunks to avoid browser length limits (around 200 words per chunk)
     const chunks = fullText.match(/[^.!?]+[.!?]+/g) || [fullText];
-    
     let currentChunkIndex = 0;
 
     const speakNextChunk = () => {
@@ -108,7 +145,11 @@ export default function ReaderMode({ url, isOpen, onClose }: ReaderModeProps) {
       }
 
       const utterance = new SpeechSynthesisUtterance(chunks[currentChunkIndex].trim());
-      utterance.rate = 1.0;
+      const bestVoice = getBestVoice();
+      if (bestVoice) {
+        utterance.voice = bestVoice;
+      }
+      utterance.rate = 0.95;
       utterance.pitch = 1.0;
       
       utterance.onend = () => {
@@ -116,11 +157,7 @@ export default function ReaderMode({ url, isOpen, onClose }: ReaderModeProps) {
         speakNextChunk();
       };
 
-      utterance.onerror = (event) => {
-        console.error("Speech synthesis error:", event);
-        setIsSpeaking(false);
-      };
-
+      utterance.onerror = () => setIsSpeaking(false);
       window.speechSynthesis.speak(utterance);
     };
 
@@ -179,7 +216,7 @@ export default function ReaderMode({ url, isOpen, onClose }: ReaderModeProps) {
             exit={{ scale: 0.95, opacity: 0 }}
             className={`relative w-full h-full max-w-5xl border shadow-2xl md:rounded-[2rem] overflow-hidden flex flex-col transition-colors duration-500 ${themeStyles[theme]}`}
           >
-            {theme === 'sepia' && <div className="absolute inset-0 sepia-texture pointer-events-none z-0" />}
+            {/* Background transitions handled by themeStyles[theme] */}
             {/* Reading Progress Bar */}
             <div className="absolute top-0 left-0 w-full h-1 z-[60] bg-zinc-800/20">
               <motion.div 
@@ -192,7 +229,7 @@ export default function ReaderMode({ url, isOpen, onClose }: ReaderModeProps) {
             <div className={`flex items-center justify-between p-3 md:p-6 border-b transition-colors duration-500 z-50 ${themeStyles[theme]}`}>
               <div className="flex items-center gap-2 md:gap-4">
                 <button
-                  onClick={onClose}
+                  onClick={handleClose}
                   className="p-1.5 md:p-2 hover:bg-black/5 rounded-full transition-colors"
                 >
                   <ArrowLeft className="w-5 h-5" />
@@ -275,11 +312,23 @@ export default function ReaderMode({ url, isOpen, onClose }: ReaderModeProps) {
             >
               <div className="max-w-3xl mx-auto px-6 py-12 md:py-20">
                 {loading ? (
-                  <div className="flex flex-col items-center justify-center py-20 gap-4">
-                    <Loader2 className="w-10 h-10 text-accent animate-spin" />
-                    <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-50 animate-pulse">
-                      Distilling Intelligence...
-                    </p>
+                  <div className="space-y-12 animate-pulse">
+                    <div className="space-y-6">
+                      <div className="h-4 w-24 bg-current/10 rounded" />
+                      <div className="h-12 w-full bg-current/10 rounded-2xl" />
+                      <div className="h-12 w-2/3 bg-current/10 rounded-2xl" />
+                    </div>
+                    <div className="space-y-4">
+                      {[1, 2, 3, 4, 5, 6].map((i) => (
+                        <div key={i} className="h-4 w-full bg-current/5 rounded" style={{ opacity: 1 - i * 0.1 }} />
+                      ))}
+                    </div>
+                    <div className="flex flex-col items-center justify-center py-10 gap-4">
+                      <Loader2 className="w-6 h-6 text-accent animate-spin opacity-40" />
+                      <p className="text-[9px] font-black uppercase tracking-[0.3em] opacity-30">
+                        Distilling Intelligence...
+                      </p>
+                    </div>
                   </div>
                 ) : error ? (
                   <div className="text-center py-20">
@@ -361,10 +410,6 @@ export default function ReaderMode({ url, isOpen, onClose }: ReaderModeProps) {
                         margin-bottom: 2rem;
                       }
 
-                      .sepia-texture {
-                        background-image: url("https://www.transparenttextures.com/patterns/natural-paper.png");
-                        pointer-events: none;
-                        opacity: 0.4;
                       }
                     `}</style>
                     
@@ -382,7 +427,7 @@ export default function ReaderMode({ url, isOpen, onClose }: ReaderModeProps) {
                         
                         <div className="flex flex-col sm:flex-row items-center gap-4">
                           <button
-                            onClick={onClose}
+                            onClick={handleClose}
                             className={`px-10 py-5 rounded-full border border-border hover:border-accent transition-all font-black text-xs uppercase tracking-widest ${theme === 'dark' ? 'bg-zinc-900' : 'bg-white shadow-xl'}`}
                           >
                             Back to News Feed

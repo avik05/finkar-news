@@ -20,6 +20,11 @@ export async function GET(request: NextRequest) {
     if (!response.ok) throw new Error("Could not reach site");
     const html = await response.text();
 
+    const headers = {
+      "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400",
+      "Content-Type": "application/json",
+    };
+
     try {
       // 1. ATTEMPT HIGH-FIDELITY EXTRACTION (Works on Vercel)
       // Using 'require' instead of 'import' to prevent localhost build errors
@@ -42,7 +47,7 @@ export async function GET(request: NextRequest) {
           content: cleanContent,
           byline: article.byline || "Editorial Staff",
           siteName: article.siteName || new URL(url).hostname.replace('www.', ''),
-        });
+        }, { headers });
       }
       throw new Error("Readability failed");
 
@@ -68,7 +73,7 @@ export async function GET(request: NextRequest) {
         content: cleanContent,
         byline: "Fast Mode",
         siteName: new URL(url).hostname.replace('www.', ''),
-      });
+      }, { headers });
     }
 
   } catch (error: any) {

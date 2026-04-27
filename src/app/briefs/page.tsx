@@ -22,9 +22,8 @@ import ReaderMode from "@/components/ReaderMode";
 export default function BriefsPage() {
   const [articles, setArticles] = useState<NewsArticle[]>([]);
   const [loading, setLoading] = useState(true);
-  const { isOpen, url, openReader, closeReader } = useReaderStore();
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const [currentVoiceIndex, setCurrentVoiceIndex] = useState(0);
+  const [currentlySpeakingId, setCurrentlySpeakingId] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchArticles() {
@@ -39,19 +38,68 @@ export default function BriefsPage() {
       }
     }
     fetchArticles();
+
+    const loadVoices = () => {
+      const availableVoices = window.speechSynthesis.getVoices();
+      setVoices(availableVoices);
+    };
+    loadVoices();
+    window.speechSynthesis.onvoiceschanged = loadVoices;
+    
+    return () => {
+      window.speechSynthesis.cancel();
+    };
   }, []);
 
+  const getBestVoice = () => {
+    // Priority list for natural-sounding voices
+    const priorities = ["Google US English", "Google UK English Female", "Samantha", "Victoria", "Microsoft Aria"];
+    for (const name of priorities) {
+      const voice = voices.find(v => v.name.includes(name));
+      if (voice) return voice;
+    }
+    return voices.find(v => v.lang.startsWith("en")) || voices[0];
+  };
+
   const toggleSpeaking = (article: NewsArticle) => {
-    if (isSpeaking) {
+    // 1. If we are clicking the SAME article that is already speaking, stop it.
+    if (isSpeaking && currentlySpeakingId === article.id) {
       window.speechSynthesis.cancel();
       setIsSpeaking(false);
-    } else {
-      const text = `${article.title}. ${article.summary}`;
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.onend = () => setIsSpeaking(false);
-      window.speechSynthesis.speak(utterance);
-      setIsSpeaking(true);
+      setCurrentlySpeakingId(null);
+      return;
     }
+
+    // 2. If something else is speaking (or we just want to start a new one), clear it first.
+    window.speechSynthesis.cancel();
+    
+    const text = `${article.title}. ${article.summary}`;
+    const utterance = new SpeechSynthesisUtterance(text);
+    
+    const bestVoice = getBestVoice();
+    if (bestVoice) {
+      utterance.voice = bestVoice;
+    }
+    
+    utterance.rate = 0.95;
+    utterance.pitch = 1;
+    
+    utterance.onstart = () => {
+      setIsSpeaking(true);
+      setCurrentlySpeakingId(article.id);
+    };
+
+    utterance.onend = () => {
+      setIsSpeaking(false);
+      setCurrentlySpeakingId(null);
+    };
+
+    utterance.onerror = () => {
+      setIsSpeaking(false);
+      setCurrentlySpeakingId(null);
+    };
+
+    window.speechSynthesis.speak(utterance);
   };
 
   if (loading) {
@@ -128,12 +176,14 @@ export default function BriefsPage() {
                 </span>
               </div>
 
-              <h1 className="text-3xl md:text-4xl font-serif font-black text-white mb-6 leading-tight tracking-tight">
+              <h1 className="text-2xl md:text-4xl font-serif font-black text-white mb-6 leading-tight tracking-tight">
                 {article.title}
               </h1>
 
-              <div className="text-lg md:text-xl text-white/80 leading-relaxed font-medium mb-10 text-justify">
-                {article.summary}
+              <div className="text-base md:text-lg text-white/80 leading-relaxed font-medium mb-10 text-justify line-clamp-[8] md:line-clamp-none">
+                {article.summary && article.summary.length > 500 
+                  ? article.summary.substring(0, 500) + "..." 
+                  : article.summary}
               </div>
 
               <div className="flex flex-wrap items-center justify-between gap-6 pt-8 border-t border-white/10">
@@ -141,10 +191,10 @@ export default function BriefsPage() {
                   <button
                     onClick={() => toggleSpeaking(article)}
                     className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${
-                      isSpeaking ? "bg-accent text-white" : "bg-white/10 text-white hover:bg-accent"
+                      isSpeaking && currentlySpeakingId === article.id ? "bg-accent text-white" : "bg-white/10 text-white hover:bg-accent"
                     }`}
                   >
-                    {isSpeaking ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
+                    {isSpeaking && currentlySpeakingId === article.id ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
                   </button>
                   <button 
                     className="w-12 h-12 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition-all"

@@ -3,7 +3,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-export type Theme = "dark" | "light" | "paper";
+export type Theme = "black" | "light" | "paper";
 
 interface ThemeState {
   theme: Theme;
@@ -14,7 +14,7 @@ interface ThemeState {
 export const useThemeStore = create<ThemeState>()(
   persist(
     (set) => ({
-      theme: "dark",
+      theme: "paper",
       setTheme: (theme) => {
         set({ theme });
         document.documentElement.setAttribute("data-theme", theme);
@@ -22,11 +22,11 @@ export const useThemeStore = create<ThemeState>()(
       toggleTheme: () => {
         set((state) => {
           const nextTheme: Theme = 
-            state.theme === "dark" 
+            state.theme === "paper" 
               ? "light" 
               : state.theme === "light" 
-                ? "paper" 
-                : "dark";
+                ? "black" 
+                : "paper";
           document.documentElement.setAttribute("data-theme", nextTheme);
           return { theme: nextTheme };
         });

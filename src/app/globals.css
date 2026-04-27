@@ -17,6 +17,15 @@
 }
 
 :root {
+  --bg: #f7f2e1;
+  --fg: #1a1a1a;
+  --muted: #7c7c7c;
+  --card: #efead5;
+  --border: #e0d9c4;
+  --accent: #2563eb;
+}
+
+[data-theme='black'] {
   --bg: #000000;
   --fg: #ffffff;
   --muted: #a1a1aa;
@@ -32,15 +41,6 @@
   --card: #f8f8f8;
   --border: #e0e0e0;
   --accent: #1d4ed8;
-}
-
-[data-theme='paper'] {
-  --bg: #f7f2e1;
-  --fg: #1a1a1a;
-  --muted: #7c7c7c;
-  --card: #efead5;
-  --border: #e0d9c4;
-  --accent: #8b6b4d;
 }
 
 body {
