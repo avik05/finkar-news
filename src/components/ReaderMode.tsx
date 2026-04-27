@@ -30,8 +30,6 @@ interface ArticleContent {
   siteName: string;
 }
 
-type ReaderTheme = "light" | "dark" | "sepia";
-
 export default function ReaderMode({ url, isOpen, onClose }: ReaderModeProps) {
   const [content, setContent] = useState<ArticleContent | null>(null);
   const [loading, setLoading] = useState(false);
@@ -41,14 +39,13 @@ export default function ReaderMode({ url, isOpen, onClose }: ReaderModeProps) {
   const [readingProgress, setReadingProgress] = useState(0);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [readingTime, setReadingTime] = useState(0);
+  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
   
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const synthesisRef = useRef<SpeechSynthesisUtterance | null>(null);
 
   useEffect(() => {
     if (isOpen && url) {
       fetchContent();
-      // Push state to history to enable back gesture to close modal
       window.history.pushState({ readerOpen: true }, "");
     } else {
       stopSpeaking();
@@ -56,7 +53,7 @@ export default function ReaderMode({ url, isOpen, onClose }: ReaderModeProps) {
       setError(null);
     }
 
-    const handlePopState = (event: PopStateEvent) => {
+    const handlePopState = () => {
       if (isOpen) {
         onClose();
       }
@@ -66,10 +63,17 @@ export default function ReaderMode({ url, isOpen, onClose }: ReaderModeProps) {
     return () => window.removeEventListener("popstate", handlePopState);
   }, [isOpen, url]);
 
+  useEffect(() => {
+    const loadVoices = () => {
+      const availableVoices = window.speechSynthesis.getVoices();
+      setVoices(availableVoices);
+    };
+    loadVoices();
+    window.speechSynthesis.onvoiceschanged = loadVoices;
+  }, []);
+
   const handleClose = () => {
     if (isOpen) {
-      // If we're closing via button, we need to go back in history 
-      // to remove the state we pushed, so the NEXT back gesture works right.
       window.history.back();
       onClose();
     }
@@ -80,22 +84,16 @@ export default function ReaderMode({ url, isOpen, onClose }: ReaderModeProps) {
     setError(null);
     try {
       const response = await fetch(`/api/scrape?url=${encodeURIComponent(url)}`);
-      
       const contentType = response.headers.get("content-type");
       if (!contentType || !contentType.includes("application/json")) {
         throw new Error("Intelligence system is still deploying or unreachable. Please refresh in a moment.");
       }
-
       const data = await response.json();
       if (data.error) throw new Error(data.error);
-      
       setContent(data);
-      
-      // Calculate reading time (~200 words per minute)
       const text = data.content.replace(/<[^>]*>/g, '');
       const wordCount = text.split(/\s+/).length;
       setReadingTime(Math.max(1, Math.ceil(wordCount / 200)));
-      
     } catch (err: any) {
       setError(err.message || "Failed to load article content");
     } finally {
@@ -111,17 +109,6 @@ export default function ReaderMode({ url, isOpen, onClose }: ReaderModeProps) {
     }
   };
 
-  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
-
-  useEffect(() => {
-    const loadVoices = () => {
-      const availableVoices = window.speechSynthesis.getVoices();
-      setVoices(availableVoices);
-    };
-    loadVoices();
-    window.speechSynthesis.onvoiceschanged = loadVoices;
-  }, []);
-
   const getBestVoice = () => {
     const priorities = ["Google US English", "Google UK English Female", "Samantha", "Victoria", "Microsoft Aria"];
     for (const name of priorities) {
@@ -134,7 +121,6 @@ export default function ReaderMode({ url, isOpen, onClose }: ReaderModeProps) {
   const startSpeaking = () => {
     if (!content) return;
     stopSpeaking();
-    
     const fullText = `${content.title}. By ${content.byline || content.siteName}. ${content.content.replace(/<[^>]*>/g, ' ')}`;
     const chunks = fullText.match(/[^.!?]+[.!?]+/g) || [fullText];
     let currentChunkIndex = 0;
@@ -144,24 +130,17 @@ export default function ReaderMode({ url, isOpen, onClose }: ReaderModeProps) {
         setIsSpeaking(false);
         return;
       }
-
       const utterance = new SpeechSynthesisUtterance(chunks[currentChunkIndex].trim());
       const bestVoice = getBestVoice();
-      if (bestVoice) {
-        utterance.voice = bestVoice;
-      }
+      if (bestVoice) utterance.voice = bestVoice;
       utterance.rate = 0.95;
-      utterance.pitch = 1.0;
-      
       utterance.onend = () => {
         currentChunkIndex++;
         speakNextChunk();
       };
-
       utterance.onerror = () => setIsSpeaking(false);
       window.speechSynthesis.speak(utterance);
     };
-
     speakNextChunk();
     setIsSpeaking(true);
   };
@@ -173,11 +152,7 @@ export default function ReaderMode({ url, isOpen, onClose }: ReaderModeProps) {
 
   const toggleSpeaking = () => {
     if (isSpeaking) {
-      window.speechSynthesis.pause();
-      setIsSpeaking(false);
-    } else if (window.speechSynthesis.paused) {
-      window.speechSynthesis.resume();
-      setIsSpeaking(true);
+      stopSpeaking();
     } else {
       startSpeaking();
     }
@@ -186,13 +161,13 @@ export default function ReaderMode({ url, isOpen, onClose }: ReaderModeProps) {
   const themeStyles = {
     black: "bg-zinc-950 text-zinc-100 border-zinc-800",
     light: "bg-white text-zinc-900 border-zinc-200",
-    sepia: "bg-[#f4ecd8] text-[#5b4636] border-[#e4d4b1]"
+    paper: "bg-[#f4ecd8] text-[#5b4636] border-[#e4d4b1]"
   };
 
   const proseThemeStyles = {
     black: "prose-invert text-zinc-100/90",
     light: "text-zinc-900/90",
-    sepia: "text-[#5b4636]/90"
+    paper: "text-[#5b4636]/90"
   };
 
   const fontClasses = {
@@ -217,8 +192,6 @@ export default function ReaderMode({ url, isOpen, onClose }: ReaderModeProps) {
             exit={{ scale: 0.95, opacity: 0 }}
             className={`relative w-full h-full max-w-5xl border shadow-2xl md:rounded-[2rem] overflow-hidden flex flex-col transition-colors duration-500 ${themeStyles[theme]}`}
           >
-            {/* Background transitions handled by themeStyles[theme] */}
-            {/* Reading Progress Bar */}
             <div className="absolute top-0 left-0 w-full h-1 z-[60] bg-zinc-800/20">
               <motion.div 
                 className="h-full bg-accent"
@@ -226,7 +199,6 @@ export default function ReaderMode({ url, isOpen, onClose }: ReaderModeProps) {
               />
             </div>
 
-            {/* Header */}
             <div className={`flex items-center justify-between p-3 md:p-6 border-b transition-colors duration-500 z-50 ${themeStyles[theme]}`}>
               <div className="flex items-center gap-2 md:gap-4">
                 <button
@@ -242,7 +214,6 @@ export default function ReaderMode({ url, isOpen, onClose }: ReaderModeProps) {
               </div>
 
               <div className="flex items-center gap-1.5 md:gap-4">
-                {/* Audio & External Controls */}
                 {content && (
                   <div className="flex items-center gap-1.5 md:gap-2">
                     <button
@@ -271,9 +242,8 @@ export default function ReaderMode({ url, isOpen, onClose }: ReaderModeProps) {
 
                 <div className="h-5 w-[1px] bg-border mx-0.5 hidden md:block"></div>
 
-                {/* Theme Selector */}
                 <div className="flex items-center gap-1 p-1 bg-black/5 rounded-full scale-90 md:scale-100">
-                  {(["light", "black", "sepia"] as const).map((t) => (
+                  {(["light", "black", "paper"] as const).map((t) => (
                     <button
                       key={t}
                       onClick={() => setTheme(t)}
@@ -288,7 +258,6 @@ export default function ReaderMode({ url, isOpen, onClose }: ReaderModeProps) {
 
                 <div className="h-5 w-[1px] bg-border mx-0.5 hidden md:block"></div>
 
-                {/* Font Size Selector */}
                 <div className="flex items-center gap-0.5 md:gap-1">
                   {(["sm", "base", "lg", "xl"] as const).map((size) => (
                     <button
@@ -305,7 +274,6 @@ export default function ReaderMode({ url, isOpen, onClose }: ReaderModeProps) {
               </div>
             </div>
 
-            {/* Content Area */}
             <div 
               ref={scrollContainerRef}
               onScroll={handleScroll}
@@ -386,34 +354,6 @@ export default function ReaderMode({ url, isOpen, onClose }: ReaderModeProps) {
                       dangerouslySetInnerHTML={{ __html: content.content }}
                     />
                     
-                    <style jsx global>{`
-                      .editorial-reading-area blockquote {
-                        border-left: 2px solid var(--accent);
-                        padding-left: 2rem;
-                        font-style: italic;
-                        font-size: 1.25em;
-                        opacity: 0.8;
-                        margin: 3rem 0;
-                        position: relative;
-                      }
-
-                      .editorial-reading-area blockquote::before {
-                        content: '"';
-                        position: absolute;
-                        left: -1rem;
-                        top: -1rem;
-                        font-size: 4rem;
-                        opacity: 0.1;
-                        font-family: serif;
-                      }
-
-                      .editorial-reading-area p {
-                        margin-bottom: 2rem;
-                      }
-
-                      }
-                    `}</style>
-                    
                     <footer className="mt-24 pt-12 border-t border-border">
                       <div className="flex flex-col items-center gap-8">
                         <div className="flex items-center gap-2 opacity-30">
@@ -429,7 +369,7 @@ export default function ReaderMode({ url, isOpen, onClose }: ReaderModeProps) {
                         <div className="flex flex-col sm:flex-row items-center gap-4">
                           <button
                             onClick={handleClose}
-                            className={`px-10 py-5 rounded-full border border-border hover:border-accent transition-all font-black text-xs uppercase tracking-widest ${theme === 'dark' ? 'bg-zinc-900' : 'bg-white shadow-xl'}`}
+                            className={`px-10 py-5 rounded-full border border-border hover:border-accent transition-all font-black text-xs uppercase tracking-widest ${theme === 'black' ? 'bg-zinc-900' : 'bg-white shadow-xl'}`}
                           >
                             Back to News Feed
                           </button>
