@@ -1,0 +1,14 @@
+name: Hourly News Update
+
+on:
+  schedule:
+    - cron: '0 * * * *' # Runs at the start of every hour
+  workflow_dispatch: # Allows you to also trigger it manually from the GitHub 'Actions' tab
+
+jobs:
+  update-news:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Vercel Cron Endpoint
+        run: |
+          curl -X GET "https://finkarnews.vercel.app/api/cron/fetch-news?secret=finkar_secret_12345"
