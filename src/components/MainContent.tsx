@@ -74,9 +74,16 @@ export default function MainContent({ articles }: MainContentProps) {
                 className="overflow-hidden"
               >
                 <DailyBriefs articles={
-                  articles.filter(a => a.source === 'NewsBytes').length > 0
-                    ? articles.filter(a => a.source === 'NewsBytes').slice(0, 10)
-                    : articles.slice(20, 30)
+                  (() => {
+                    const SPORTS_KEYWORDS = ["cricket", "t20", "runs", "wicket", "ipl", "football", "goal", "match", "score", "tennis", "olympics"];
+                    return articles
+                      .filter(a => a.source === 'NewsBytes')
+                      .filter(article => {
+                        const content = `${article.title} ${article.category}`.toLowerCase();
+                        return !SPORTS_KEYWORDS.some(keyword => content.includes(keyword));
+                      })
+                      .slice(0, 10);
+                  })()
                 } />
               </motion.div>
             </>

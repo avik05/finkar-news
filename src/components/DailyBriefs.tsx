@@ -23,7 +23,6 @@ export default function DailyBriefs({ articles }: DailyBriefsProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
-            <h3 className="text-[10px] font-black uppercase tracking-[0.5em] text-accent mb-2">60-Second Intelligence</h3>
             <h2 className="text-3xl md:text-5xl font-serif font-black tracking-tighter">Daily Brief</h2>
           </div>
           
