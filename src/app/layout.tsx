@@ -45,12 +45,15 @@ export default function RootLayout({
             __html: `
               (function() {
                 try {
+                  var theme = 'paper';
                   var storage = localStorage.getItem('theme-storage');
                   if (storage) {
-                    var theme = JSON.parse(storage).state.theme;
-                    document.documentElement.setAttribute('data-theme', theme);
+                    theme = JSON.parse(storage).state.theme;
                   }
-                } catch (e) {}
+                  document.documentElement.setAttribute('data-theme', theme);
+                } catch (e) {
+                  document.documentElement.setAttribute('data-theme', 'paper');
+                }
               })();
             `,
           }}
