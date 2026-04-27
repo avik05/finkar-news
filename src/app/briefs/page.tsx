@@ -24,6 +24,8 @@ export default function BriefsPage() {
   const [loading, setLoading] = useState(true);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [currentlySpeakingId, setCurrentlySpeakingId] = useState<string | null>(null);
+  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const { isOpen, url, openReader, closeReader } = useReaderStore();
 
   useEffect(() => {
     async function fetchArticles() {
