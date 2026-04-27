@@ -2,8 +2,11 @@ name: Hourly News Update
 
 on:
   schedule:
-    - cron: '0 * * * *' # Runs at the start of every hour
-  workflow_dispatch: # Allows you to also trigger it manually from the GitHub 'Actions' tab
+    - cron: '*/30 * * * *' # Runs every 30 minutes
+  push:
+    branches:
+      - main
+  workflow_dispatch: 
 
 jobs:
   update-news:
