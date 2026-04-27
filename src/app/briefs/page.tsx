@@ -32,7 +32,15 @@ export default function BriefsPage() {
       try {
         const response = await fetch("/api/news?source=NewsBytes");
         const data = await response.json();
-        setArticles(data as NewsArticle[]);
+        
+        const SPORTS_KEYWORDS = ["cricket", "t20", "runs", "wicket", "ipl", "football", "goal", "match", "score", "tennis", "olympics"];
+        
+        const filteredData = (data as NewsArticle[]).filter(article => {
+          const content = `${article.title} ${article.category}`.toLowerCase();
+          return !SPORTS_KEYWORDS.some(keyword => content.includes(keyword));
+        });
+
+        setArticles(filteredData);
       } catch (error) {
         console.error("Failed to fetch articles:", error);
       } finally {
