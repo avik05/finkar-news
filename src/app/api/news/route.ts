@@ -9,6 +9,7 @@ export async function GET(request: Request) {
     let query = supabase
       .from('news_articles')
       .select('*')
+      .not('category', 'ilike', '%sports%')
       .order('published_at', { ascending: false });
 
     if (source) {
