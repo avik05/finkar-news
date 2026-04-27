@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
@@ -16,9 +17,17 @@ interface MainContentProps {
 }
 
 export default function MainContent({ articles }: MainContentProps) {
-  const { isOpen, url, closeReader } = useReaderStore();
+  const { isOpen, url, openReader, closeReader } = useReaderStore();
+  const searchParams = useSearchParams();
   const [activeCategory, setActiveCategory] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
+
+  useEffect(() => {
+    const readUrl = searchParams.get("read");
+    if (readUrl) {
+      openReader(decodeURIComponent(readUrl));
+    }
+  }, [searchParams, openReader]);
 
   // Combined filtering logic
   const filteredArticles = articles.filter(article => {
@@ -46,15 +55,31 @@ export default function MainContent({ articles }: MainContentProps) {
       <main className="flex-1">
         <AnimatePresence mode="wait">
           {showHero && (
-            <motion.div
-              key="hero"
-              initial={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.5, ease: "easeInOut" }}
-              className="overflow-hidden"
-            >
-              <HeroSection articles={articles} />
-            </motion.div>
+            <>
+              <motion.div
+                key="hero"
+                initial={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.5, ease: "easeInOut" }}
+                className="overflow-hidden"
+              >
+                <HeroSection articles={articles} />
+              </motion.div>
+              
+              <motion.div
+                key="briefs"
+                initial={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.5, ease: "easeInOut" }}
+                className="overflow-hidden"
+              >
+                <DailyBriefs articles={
+                  articles.filter(a => a.source === 'NewsBytes').length > 0
+                    ? articles.filter(a => a.source === 'NewsBytes').slice(0, 10)
+                    : articles.slice(20, 30)
+                } />
+              </motion.div>
+            </>
           )}
         </AnimatePresence>
         
@@ -62,13 +87,6 @@ export default function MainContent({ articles }: MainContentProps) {
           activeCategory={activeCategory} 
           onCategorySelect={setActiveCategory} 
         />
-        
-            {/* Daily Briefs Section - Exclusively NewsBytes for perfect Inshorts experience */}
-            <DailyBriefs articles={
-              articles.filter(a => a.source === 'NewsBytes').length > 0
-                ? articles.filter(a => a.source === 'NewsBytes').slice(0, 20)
-                : articles.slice(20, 35)
-            } />
         
         <NewsFeed 
           initialArticles={feedArticles} 

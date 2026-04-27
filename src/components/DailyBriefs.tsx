@@ -93,15 +93,17 @@ export default function DailyBriefs({ articles }: DailyBriefsProps) {
           })}
 
         {/* View All Card */}
-        <motion.div
-          whileHover={{ x: 5 }}
-          className="flex-shrink-0 w-[60vw] md:w-[200px] h-[500px] md:h-[550px] flex flex-col items-center justify-center gap-4 bg-card/20 border border-dashed border-border rounded-[2.5rem] group cursor-pointer snap-center"
-        >
-           <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center group-hover:bg-accent group-hover:text-white transition-all">
-             <ArrowRight className="w-6 h-6" />
-           </div>
-           <span className="text-[10px] font-black uppercase tracking-widest text-muted">View More News</span>
-        </motion.div>
+        <Link href="/briefs">
+          <motion.div
+            whileHover={{ x: 5 }}
+            className="flex-shrink-0 w-[60vw] md:w-[200px] h-[550px] md:h-[650px] flex flex-col items-center justify-center gap-4 bg-card/20 border border-dashed border-border rounded-[2.5rem] group cursor-pointer snap-center"
+          >
+             <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center group-hover:bg-accent group-hover:text-white transition-all">
+               <ArrowRight className="w-6 h-6" />
+             </div>
+             <span className="text-[10px] font-black uppercase tracking-widest text-muted">View More News</span>
+          </motion.div>
+        </Link>
       </div>
     </section>
   );

@@ -30,7 +30,6 @@ export default function QuickAccess({ onCategorySelect, activeCategory }: QuickA
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row items-center justify-between gap-6 md:gap-8">
           <div className="flex-shrink-0 text-center md:text-left">
-            <h3 className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.4em] text-muted mb-1 md:mb-2">Explore Intelligence</h3>
             <p className="text-lg md:text-xl font-serif font-bold italic">Quick Access Hub</p>
           </div>
 

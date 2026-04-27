@@ -13,7 +13,8 @@ import {
   Clock,
   BookOpen,
   Settings,
-  ExternalLink
+  ExternalLink,
+  Share2
 } from "lucide-react";
 import { useThemeStore } from "@/lib/themeStore";
 
@@ -40,6 +41,7 @@ export default function ReaderMode({ url, isOpen, onClose }: ReaderModeProps) {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [readingTime, setReadingTime] = useState(0);
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const [isShared, setIsShared] = useState(false);
   
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -150,6 +152,31 @@ export default function ReaderMode({ url, isOpen, onClose }: ReaderModeProps) {
     setIsSpeaking(false);
   };
 
+  const handleShare = async () => {
+    const shareUrl = `${window.location.origin}/?read=${encodeURIComponent(url)}`;
+    const shareData = {
+      title: content?.title || "Finkar News Intelligence",
+      text: `Check out this intelligence on Finkar News: ${content?.title}`,
+      url: shareUrl
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch (err) {
+        console.error("Error sharing:", err);
+      }
+    } else {
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+        setIsShared(true);
+        setTimeout(() => setIsShared(false), 2000);
+      } catch (err) {
+        console.error("Error copying to clipboard:", err);
+      }
+    }
+  };
+
   const toggleSpeaking = () => {
     if (isSpeaking) {
       stopSpeaking();
@@ -228,6 +255,16 @@ export default function ReaderMode({ url, isOpen, onClose }: ReaderModeProps) {
                       </span>
                     </button>
                     
+                    <button
+                      onClick={handleShare}
+                      className={`flex items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1 md:py-1.5 rounded-full border border-transparent hover:bg-accent/10 transition-all ${isShared ? "text-accent" : "text-muted"}`}
+                    >
+                      <Share2 className="w-3.5 h-3.5 md:w-4 h-4" />
+                      <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest hidden lg:inline">
+                        {isShared ? "Link Copied" : "Share"}
+                      </span>
+                    </button>
+
                     <a
                       href={url}
                       target="_blank"
