@@ -22,6 +22,7 @@ export async function GET(request: NextRequest) {
 
     try {
       // 1. ATTEMPT HIGH-FIDELITY EXTRACTION (Works on Vercel)
+      // Using 'require' instead of 'import' to prevent localhost build errors
       const { parseHTML } = require("linkedom");
       const { Readability } = require("@mozilla/readability");
 
