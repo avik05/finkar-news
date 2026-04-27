@@ -125,6 +125,22 @@ export default function BriefsPage() {
         >
           <ArrowLeft className="w-5 h-5" />
         </Link>
+
+        {/* Centered Logo */}
+        <Link href="/" className="pointer-events-auto flex items-center gap-1 group select-none scale-50 md:scale-75 origin-center">
+          <div className="flex items-baseline">
+            <span className="font-sans font-black text-3xl tracking-tighter text-white">
+              Fin
+            </span>
+            <span className="text-[#3dd68c] font-black text-3xl drop-shadow-sm font-hindi">
+              कर
+            </span>
+            <span className="ml-2 text-[10px] font-black tracking-[0.4em] text-white/60 transition-colors group-hover:text-accent">
+              NEWS
+            </span>
+          </div>
+        </Link>
+
         <div className="px-4 py-2 bg-black/40 backdrop-blur-xl rounded-full border border-white/10 text-white pointer-events-auto text-[10px] font-black uppercase tracking-widest">
           Daily Brief
         </div>
