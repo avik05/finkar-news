@@ -1,13 +1,21 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/utils/supabase';
 
-export async function GET() {
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const source = searchParams.get('source');
+
   try {
-    const { data, error } = await supabase
+    let query = supabase
       .from('news_articles')
       .select('*')
-      .order('published_at', { ascending: false })
-      .limit(100);
+      .order('published_at', { ascending: false });
+
+    if (source) {
+      query = query.eq('source', source);
+    }
+
+    const { data, error } = await query.limit(100);
 
     if (error) throw error;
 

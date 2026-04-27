@@ -29,11 +29,9 @@ export default function BriefsPage() {
   useEffect(() => {
     async function fetchArticles() {
       try {
-        const response = await fetch("/api/news");
+        const response = await fetch("/api/news?source=NewsBytes");
         const data = await response.json();
-        // Exclusively show NewsBytes for the full-screen experience
-        const filtered = (data as NewsArticle[]).filter(a => a.source === "NewsBytes");
-        setArticles(filtered.length > 0 ? filtered : data);
+        setArticles(data as NewsArticle[]);
       } catch (error) {
         console.error("Failed to fetch articles:", error);
       } finally {
