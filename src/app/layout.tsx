@@ -39,6 +39,23 @@ export default function RootLayout({
       lang="en"
       suppressHydrationWarning
     >
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var storage = localStorage.getItem('theme-storage');
+                  if (storage) {
+                    var theme = JSON.parse(storage).state.theme;
+                    document.documentElement.setAttribute('data-theme', theme);
+                  }
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
+      </head>
       <body className={`${geistSans.variable} ${geistMono.variable} ${lora.variable} ${notoHindi.variable} antialiased min-h-screen bg-background text-foreground selection:bg-accent selection:text-white`}>
         {children}
       </body>
