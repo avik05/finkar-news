@@ -55,6 +55,15 @@ function HeroCarousel({
 
   const currentArticle = articles[currentIndex];
 
+  const handleDragEnd = (event: any, info: any) => {
+    const threshold = 50;
+    if (info.offset.x < -threshold) {
+      setCurrentIndex((prev) => (prev + 1) % articles.length);
+    } else if (info.offset.x > threshold) {
+      setCurrentIndex((prev) => (prev - 1 + articles.length) % articles.length);
+    }
+  };
+
   const categoryFallbacks: Record<string, string> = {
     "Markets": "/assets/market_fallback.png",
     "AI Updates": "/assets/ai_fallback.png",
@@ -73,11 +82,15 @@ function HeroCarousel({
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -20 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
+          drag="x"
+          dragConstraints={{ left: 0, right: 0 }}
+          dragElastic={0.2}
+          onDragEnd={handleDragEnd}
           onClick={() => openReader(currentArticle.url)}
-          className="absolute inset-0 cursor-pointer"
+          className="absolute inset-0 cursor-pointer touch-pan-y"
         >
           {/* Main Background Image or Premium Fallback */}
-          <div className="absolute inset-0">
+          <div className="absolute inset-0 pointer-events-none">
             <Image
               src={currentArticle.image_url || fallbackImage}
               alt={currentArticle.title}
@@ -87,7 +100,7 @@ function HeroCarousel({
             />
           </div>
           
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent pointer-events-none"></div>
           
           {/* Top Label for Side Banners */}
           {isSmall && Icon && (
@@ -97,8 +110,9 @@ function HeroCarousel({
             </div>
           )}
 
-          <div className={`absolute bottom-0 left-0 w-full flex flex-col justify-end gap-4 z-10 ${isSmall ? "p-4 md:p-6" : "p-6 md:p-10"}`}>
-            <div>
+          {/* Content overlay */}
+          <div className={`absolute bottom-0 left-0 w-full flex flex-col justify-end gap-4 z-10 pointer-events-none ${isSmall ? "p-4 md:p-6" : "p-6 md:p-10"}`}>
+            <div className="pointer-events-auto">
               <div className={`flex items-center gap-3 ${isSmall ? "mb-1" : "mb-2"}`}>
                 {!isSmall && (
                   <span className="px-2 py-0.5 rounded-full bg-accent text-white text-[7px] font-black uppercase tracking-widest">
@@ -180,10 +194,18 @@ export default function HeroSection({ articles }: { articles: NewsArticle[] }) {
     return !SPORTS_KEYWORDS.some(keyword => content.includes(keyword));
   });
 
-  // Specific pools for main, global, and AI news from the filtered set
-  const mainPool = filteredArticles.slice(0, 15);
-  const globalPool = filteredArticles.filter(a => a.category === "Global").slice(0, 10);
-  const aiPool = filteredArticles.filter(a => a.category === "AI Updates").slice(0, 10);
+  // 1. Extract Global for Top Side (up to 5)
+  const globalPool = filteredArticles.filter(a => a.category === "Global").slice(0, 5);
+  const globalIds = new Set(globalPool.map(a => a.id));
+
+  // 2. Extract AI Updates for Bottom Side (up to 5)
+  const aiPool = filteredArticles.filter(a => a.category === "AI Updates").slice(0, 5);
+  const aiIds = new Set(aiPool.map(a => a.id));
+
+  // 3. Main Hero gets Top 5 articles that are NOT in Global or AI pools
+  const mainPool = filteredArticles
+    .filter(a => !globalIds.has(a.id) && !aiIds.has(a.id))
+    .slice(0, 5);
 
   // Fallbacks if categories are empty
   const sidePool1 = globalPool.length > 0 ? globalPool : filteredArticles.slice(5, 10);
