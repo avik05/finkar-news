@@ -15,6 +15,7 @@ import {
   Settings,
   ExternalLink
 } from "lucide-react";
+import { useThemeStore } from "@/lib/themeStore";
 
 interface ReaderModeProps {
   url: string;
@@ -36,7 +37,7 @@ export default function ReaderMode({ url, isOpen, onClose }: ReaderModeProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [fontSize, setFontSize] = useState<"sm" | "base" | "lg" | "xl">("lg");
-  const [theme, setTheme] = useState<ReaderTheme>("sepia");
+  const { theme, setTheme } = useThemeStore();
   const [readingProgress, setReadingProgress] = useState(0);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [readingTime, setReadingTime] = useState(0);
@@ -183,13 +184,13 @@ export default function ReaderMode({ url, isOpen, onClose }: ReaderModeProps) {
   };
 
   const themeStyles = {
-    dark: "bg-zinc-950 text-zinc-100 border-zinc-800",
+    black: "bg-zinc-950 text-zinc-100 border-zinc-800",
     light: "bg-white text-zinc-900 border-zinc-200",
     sepia: "bg-[#f4ecd8] text-[#5b4636] border-[#e4d4b1]"
   };
 
   const proseThemeStyles = {
-    dark: "prose-invert text-zinc-100/90",
+    black: "prose-invert text-zinc-100/90",
     light: "text-zinc-900/90",
     sepia: "text-[#5b4636]/90"
   };
@@ -272,14 +273,14 @@ export default function ReaderMode({ url, isOpen, onClose }: ReaderModeProps) {
 
                 {/* Theme Selector */}
                 <div className="flex items-center gap-1 p-1 bg-black/5 rounded-full scale-90 md:scale-100">
-                  {(["light", "dark", "sepia"] as const).map((t) => (
+                  {(["light", "black", "sepia"] as const).map((t) => (
                     <button
                       key={t}
                       onClick={() => setTheme(t)}
                       className={`w-5 h-5 md:w-6 md:h-6 rounded-full border transition-all ${
                         theme === t ? "border-accent scale-110 shadow-sm" : "border-transparent opacity-50"
                       } ${
-                        t === "light" ? "bg-white" : t === "dark" ? "bg-zinc-900" : "bg-[#f4ecd8]"
+                        t === "light" ? "bg-white" : t === "black" ? "bg-zinc-900" : "bg-[#f4ecd8]"
                       }`}
                     />
                   ))}

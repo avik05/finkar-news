@@ -126,24 +126,23 @@ export default function BriefsPage() {
           <ArrowLeft className="w-5 h-5" />
         </Link>
 
-        {/* Centered Logo */}
-        <Link href="/" className="pointer-events-auto flex items-center gap-1 group select-none scale-50 md:scale-75 origin-center">
+        {/* Logo in the Pill Position */}
+        <Link 
+          href="/" 
+          className="px-6 py-2 bg-black/40 backdrop-blur-xl rounded-full border border-white/10 pointer-events-auto hover:bg-black/60 transition-all group select-none flex items-center gap-1 scale-75 md:scale-100"
+        >
           <div className="flex items-baseline">
-            <span className="font-sans font-black text-3xl tracking-tighter text-white">
+            <span className="font-sans font-black text-xl tracking-tighter text-white">
               Fin
             </span>
-            <span className="text-[#3dd68c] font-black text-3xl drop-shadow-sm font-hindi">
+            <span className="text-[#3dd68c] font-black text-xl drop-shadow-sm font-hindi">
               कर
             </span>
-            <span className="ml-2 text-[10px] font-black tracking-[0.4em] text-white/60 transition-colors group-hover:text-accent">
+            <span className="ml-1 text-[8px] font-black tracking-[0.3em] text-white/60 transition-colors group-hover:text-accent">
               NEWS
             </span>
           </div>
         </Link>
-
-        <div className="px-4 py-2 bg-black/40 backdrop-blur-xl rounded-full border border-white/10 text-white pointer-events-auto text-[10px] font-black uppercase tracking-widest">
-          Daily Brief
-        </div>
       </div>
 
       {articles.map((article, index) => {
