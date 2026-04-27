@@ -23,7 +23,9 @@ export default function DailyBriefs({ articles }: DailyBriefsProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
-            <h2 className="text-3xl md:text-5xl font-serif font-black tracking-tighter">Daily Brief</h2>
+            <h3 className="text-[8px] font-black uppercase tracking-[0.4em] text-accent mb-1 opacity-80">Punchy • Precise • Portable</h3>
+            <h2 className="text-3xl md:text-5xl font-serif font-black tracking-tighter mb-2">Daily Brief</h2>
+            <p className="text-xs font-serif font-medium italic text-muted opacity-70">60-word intelligence for high-speed updates.</p>
           </div>
           
           <Link 
