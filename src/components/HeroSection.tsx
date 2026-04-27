@@ -12,7 +12,10 @@ function formatTimeAgo(dateString: string) {
   const now = new Date();
   const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / 60000);
   
-  if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+  // Use Math.abs and a 'Just now' fallback to prevent negative weirdness
+  if (diffInMinutes < 1) return 'Just now';
+  if (diffInMinutes < 60) return `${Math.max(1, diffInMinutes)}m ago`;
+  
   const diffInHours = Math.floor(diffInMinutes / 60);
   if (diffInHours < 24) return `${diffInHours}h ago`;
   return `${Math.floor(diffInHours / 24)}d ago`;
@@ -170,14 +173,21 @@ function HeroCarousel({
 export default function HeroSection({ articles }: { articles: NewsArticle[] }) {
   if (!articles || articles.length === 0) return null;
 
-  // Specific pools for main, global, and AI news from the full set
-  const mainPool = articles.slice(0, 15);
-  const globalPool = articles.filter(a => a.category === "Global").slice(0, 10);
-  const aiPool = articles.filter(a => a.category === "AI Updates").slice(0, 10);
+  const SPORTS_KEYWORDS = ["cricket", "t20", "runs", "wicket", "ipl", "football", "goal", "match", "score", "tennis", "olympics"];
+  
+  const filteredArticles = articles.filter(article => {
+    const content = `${article.title} ${article.category}`.toLowerCase();
+    return !SPORTS_KEYWORDS.some(keyword => content.includes(keyword));
+  });
+
+  // Specific pools for main, global, and AI news from the filtered set
+  const mainPool = filteredArticles.slice(0, 15);
+  const globalPool = filteredArticles.filter(a => a.category === "Global").slice(0, 10);
+  const aiPool = filteredArticles.filter(a => a.category === "AI Updates").slice(0, 10);
 
   // Fallbacks if categories are empty
-  const sidePool1 = globalPool.length > 0 ? globalPool : articles.slice(5, 10);
-  const sidePool2 = aiPool.length > 0 ? aiPool : articles.slice(10, 15);
+  const sidePool1 = globalPool.length > 0 ? globalPool : filteredArticles.slice(5, 10);
+  const sidePool2 = aiPool.length > 0 ? aiPool : filteredArticles.slice(10, 15);
 
   return (
     <section className="relative py-8 md:py-12 overflow-hidden bg-background">

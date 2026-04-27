@@ -10,7 +10,8 @@ function formatTimeAgo(dateString: string) {
   const now = new Date();
   const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / 60000);
   
-  if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+  if (diffInMinutes < 1) return 'Just now';
+  if (diffInMinutes < 60) return `${Math.max(1, diffInMinutes)}m ago`;
   const diffInHours = Math.floor(diffInMinutes / 60);
   if (diffInHours < 24) return `${diffInHours}h ago`;
   return `${Math.floor(diffInHours / 24)}d ago`;
@@ -23,7 +24,12 @@ interface NewsFeedProps {
 }
 
 export default function NewsFeed({ initialArticles, activeCategory, searchQuery }: NewsFeedProps) {
-  const displayedArticles = initialArticles;
+  const SPORTS_KEYWORDS = ["cricket", "t20", "runs", "wicket", "ipl", "football", "goal", "match", "score", "tennis", "olympics"];
+  
+  const displayedArticles = initialArticles.filter(article => {
+    const content = `${article.title} ${article.category}`.toLowerCase();
+    return !SPORTS_KEYWORDS.some(keyword => content.includes(keyword));
+  });
 
   return (
     <section id="feed" className="py-12 bg-background min-h-screen transition-colors duration-300">
