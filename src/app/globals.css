@@ -17,10 +17,6 @@
 }
 
 :root {
-  /* No default colors here - they are handled by the data-theme attribute */
-}
-
-[data-theme='paper'] {
   --bg: #f7f2e1;
   --fg: #1a1a1a;
   --muted: #7c7c7c;

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Lora, Noto_Sans_Devanagari } from "next/font/google";
 import "./globals.css";
+import ThemeSync from "@/components/ThemeSync";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -45,21 +46,19 @@ export default function RootLayout({
             __html: `
               (function() {
                 try {
-                  var theme = 'paper';
                   var storage = localStorage.getItem('theme-storage');
                   if (storage) {
-                    theme = JSON.parse(storage).state.theme;
+                    var theme = JSON.parse(storage).state.theme;
+                    document.documentElement.setAttribute('data-theme', theme);
                   }
-                  document.documentElement.setAttribute('data-theme', theme);
-                } catch (e) {
-                  document.documentElement.setAttribute('data-theme', 'paper');
-                }
+                } catch (e) {}
               })();
             `,
           }}
         />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} ${lora.variable} ${notoHindi.variable} antialiased min-h-screen bg-background text-foreground selection:bg-accent selection:text-white`}>
+        <ThemeSync />
         {children}
       </body>
     </html>

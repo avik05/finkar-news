@@ -15,10 +15,7 @@ export const useThemeStore = create<ThemeState>()(
   persist(
     (set) => ({
       theme: "paper",
-      setTheme: (theme) => {
-        set({ theme });
-        document.documentElement.setAttribute("data-theme", theme);
-      },
+      setTheme: (theme) => set({ theme }),
       toggleTheme: () => {
         set((state) => {
           const nextTheme: Theme = 
@@ -27,18 +24,12 @@ export const useThemeStore = create<ThemeState>()(
               : state.theme === "light" 
                 ? "black" 
                 : "paper";
-          document.documentElement.setAttribute("data-theme", nextTheme);
           return { theme: nextTheme };
         });
       },
     }),
     {
       name: "theme-storage",
-      onRehydrateStorage: () => (state) => {
-        if (state) {
-          document.documentElement.setAttribute("data-theme", state.theme);
-        }
-      },
     }
   )
 );
