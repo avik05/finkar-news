@@ -2,7 +2,7 @@ import MainContent from "@/components/MainContent";
 import { supabase } from "@/utils/supabase";
 import { NewsArticle } from "@/types";
 
-// Build trigger: 2026-04-27T15:04:10
+// Build trigger: 2026-04-27T15:08:30 - Robust Scraper Edition
 export const revalidate = 60; // Revalidate every 60 seconds to keep feed fresh
 
 export default async function Home() {
