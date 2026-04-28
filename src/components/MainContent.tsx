@@ -76,12 +76,20 @@ export default function MainContent({ articles }: MainContentProps) {
               >
                 <DailyBriefs articles={
                   (() => {
-                    const SPORTS_KEYWORDS = ["cricket", "t20", "runs", "wicket", "ipl", "football", "goal", "match", "score", "tennis", "olympics"];
+                    const BLACKLIST_KEYWORDS = [
+                      "bollywood", "hollywood", "celebrity", "gossip", "movie", "actor", "actress", 
+                      "entertainment", "romance", "dating", "lifestyle", "fashion", "horoscope",
+                      "astrology", "recipe", "cooking", "cricket", "t20", "runs", "wicket", "ipl", 
+                      "football", "goal", "match", "score", "tennis", "olympics", "box office"
+                    ];
+                    const allowedCategories = ["Markets", "Economy", "AI Updates", "Global"];
                     return articles
                       .filter(a => a.source === 'NewsBytes')
                       .filter(article => {
-                        const content = `${article.title} ${article.category}`.toLowerCase();
-                        return !SPORTS_KEYWORDS.some(keyword => content.includes(keyword));
+                        const content = `${article.title} ${article.summary} ${article.category}`.toLowerCase();
+                        const isBlacklisted = BLACKLIST_KEYWORDS.some(keyword => content.includes(keyword));
+                        const isAllowedCategory = allowedCategories.includes(article.category);
+                        return !isBlacklisted && isAllowedCategory;
                       })
                       .slice(0, 10);
                   })()
