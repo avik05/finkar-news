@@ -193,15 +193,7 @@ export default function Navbar({ activeCategory, setActiveCategory, searchQuery,
                 />
               ))}
             </div>
-            {!isSubscribed && (
-              <button 
-                onClick={handleNotificationClick}
-                className="p-2 transition-colors rounded-full text-muted hover:text-foreground"
-                title="Enable Notifications"
-              >
-                <Bell className="w-5 h-5" />
-              </button>
-            )}
+
 
             <button
               onClick={() => setIsOpen(!isOpen)}
