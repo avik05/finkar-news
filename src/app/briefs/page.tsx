@@ -57,6 +57,7 @@ export default function BriefsPage() {
       }
     }
     fetchArticles();
+    const interval = setInterval(fetchArticles, 5 * 60 * 1000);
 
     const loadVoices = () => {
       const availableVoices = window.speechSynthesis.getVoices();
@@ -66,6 +67,7 @@ export default function BriefsPage() {
     window.speechSynthesis.onvoiceschanged = loadVoices;
     
     return () => {
+      clearInterval(interval);
       window.speechSynthesis.cancel();
     };
   }, []);
