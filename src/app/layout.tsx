@@ -3,6 +3,7 @@ import { Geist, Geist_Mono, Lora, Noto_Sans_Devanagari } from "next/font/google"
 import "./globals.css";
 import ThemeSync from "@/components/ThemeSync";
 import OneSignalInit from "@/components/OneSignalInit";
+import { Analytics } from "@vercel/analytics/next";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -62,6 +63,7 @@ export default function RootLayout({
         <ThemeSync />
         <OneSignalInit />
         {children}
+        <Analytics />
       </body>
     </html>
   );

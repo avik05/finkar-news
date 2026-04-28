@@ -12,6 +12,7 @@
     "@mozilla/readability": "^0.6.0",
     "@supabase/supabase-js": "^2.103.0",
     "@types/mozilla__readability": "^0.4.2",
+    "@vercel/analytics": "^2.0.1",
     "framer-motion": "^12.38.0",
     "linkedom": "^0.18.5",
     "lucide-react": "^1.8.0",
