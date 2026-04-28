@@ -5,12 +5,8 @@ import OneSignal from "react-onesignal";
 
 export default function OneSignalInit() {
   useEffect(() => {
-    const appId = process.env.NEXT_PUBLIC_ONESIGNAL_APP_ID;
-    if (!appId) {
-      console.warn("OneSignal App ID is missing. Please set NEXT_PUBLIC_ONESIGNAL_APP_ID in your environment variables.");
-      return;
-    }
-
+    const appId = process.env.NEXT_PUBLIC_ONESIGNAL_APP_ID || "7be09da1-280a-4252-88f8-41181b32c387";
+    
     OneSignal.init({
       appId: appId,
       allowLocalhostAsSecureOrigin: true,
