@@ -2,9 +2,54 @@ import MainContent from "@/components/MainContent";
 import { supabase } from "@/utils/supabase";
 import { NewsArticle } from "@/types";
 import { Suspense } from "react";
+import { Metadata } from "next";
 
-// Build trigger: 2026-04-27T17:31:30 - Grand Bundle Edition
 export const revalidate = 60;
+
+type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
+
+export async function generateMetadata(props: { searchParams: SearchParams }): Promise<Metadata> {
+  const searchParams = await props.searchParams;
+  const readUrl = typeof searchParams.read === "string" ? searchParams.read : undefined;
+
+  if (readUrl) {
+    const { data: article } = await supabase
+      .from("news_articles")
+      .select("*")
+      .eq("url", readUrl)
+      .single();
+
+    if (article) {
+      const summaryText = article.summary || "Read the latest financial intelligence update.";
+      return {
+        title: `${article.title} | Finkar News`,
+        description: summaryText,
+        openGraph: {
+          title: article.title,
+          description: summaryText,
+          images: article.image_url ? [article.image_url] : [],
+          type: "article",
+        },
+        twitter: {
+          card: "summary_large_image",
+          title: article.title,
+          description: summaryText,
+          images: article.image_url ? [article.image_url] : [],
+        },
+      };
+    }
+  }
+
+  return {
+    title: "Finkar News | Automated Intelligence",
+    description: "Your daily premium real-time insight dashboard.",
+    openGraph: {
+      title: "Finkar News",
+      description: "Your daily premium real-time insight dashboard.",
+      images: ["/icon.png"],
+    },
+  };
+}
 
 export default async function Home() {
   // Fetch general news
