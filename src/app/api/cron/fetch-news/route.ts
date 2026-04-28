@@ -91,7 +91,7 @@ export async function GET(request: Request) {
               included_segments: ["All"],
               headings: { "en": notificationTitle },
               contents: { "en": notificationMessage },
-              url: "https://finkarnews.vercel.app/briefs"
+              url: "https://news.getfinkar.com/briefs"
             })
           });
           console.log(`Push notification triggered: ${notificationTitle}`);
