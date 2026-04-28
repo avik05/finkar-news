@@ -59,7 +59,8 @@ export default function DailyBriefs({ articles }: DailyBriefsProps) {
                 key={article.id}
                 whileHover={{ y: -8, scale: 1.01 }}
                 style={{ backgroundColor: cardBg }}
-                className="flex-shrink-0 w-[85vw] md:w-[450px] h-[550px] md:h-[650px] relative rounded-[3rem] overflow-hidden group snap-center shadow-2xl border border-white/5"
+                onClick={() => openReader(article.url)}
+                className="flex-shrink-0 w-[85vw] md:w-[450px] h-[550px] md:h-[650px] relative rounded-[3rem] overflow-hidden group snap-center shadow-2xl border border-white/5 cursor-pointer"
               >
                 {/* Background Image with subtle texture blend */}
                 <div className="absolute inset-0">

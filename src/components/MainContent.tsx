@@ -30,7 +30,8 @@ export default function MainContent({ articles }: MainContentProps) {
   }, [searchParams, openReader]);
 
   // Combined filtering logic
-  const filteredArticles = articles.filter(article => {
+  const mainArticles = articles.filter(a => a.source !== 'NewsBytes');
+  const filteredArticles = mainArticles.filter(article => {
     const matchesCategory = activeCategory === "All" || article.category === activeCategory;
     const matchesSearch = searchQuery === "" || 
       article.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -41,7 +42,7 @@ export default function MainContent({ articles }: MainContentProps) {
   });
 
   const showHero = activeCategory === "All" && searchQuery === "";
-  const heroArticles = articles.slice(0, 15); // Increased to support main + side carousels
+  const heroArticles = mainArticles.slice(0, 15); 
   const feedArticles = showHero ? filteredArticles.slice(15) : filteredArticles;
 
   return (
@@ -63,7 +64,7 @@ export default function MainContent({ articles }: MainContentProps) {
                 transition={{ duration: 0.5, ease: "easeInOut" }}
                 className="overflow-hidden"
               >
-                <HeroSection articles={articles} />
+                <HeroSection articles={mainArticles} />
               </motion.div>
               
               <motion.div

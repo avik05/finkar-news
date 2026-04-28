@@ -118,9 +118,26 @@ export async function fetchAndProcessFeeds(): Promise<ProcessedArticle[]> {
           
           if (summary.trim().length === 0) summary = item.title;
 
+          // Smart Blacklist Filtering (Drop irrelevant noise)
+          const BLACKLIST_KEYWORDS = [
+            "bollywood", "hollywood", "celebrity", "gossip", "movie", "actor", "actress", 
+            "entertainment", "romance", "dating", "lifestyle", "fashion", "horoscope",
+            "astrology", "recipe", "cooking", "cricket", "t20", "runs", "wicket", "ipl", 
+            "football", "goal", "match", "score", "tennis", "olympics", "box office"
+          ];
+          
+          const contentToCheck = `${item.title} ${summary}`.toLowerCase();
+          const isIrrelevant = BLACKLIST_KEYWORDS.some(keyword => 
+            contentToCheck.includes(keyword)
+          );
+          
+          if (isIrrelevant) return null;
+
+          // Accurate Date Parsing
           let pubDate = new Date();
-          if (item.pubDate) {
-            const parsed = new Date(item.pubDate);
+          const dateToParse = itemAny.isoDate || itemAny.pubDate;
+          if (dateToParse) {
+            const parsed = new Date(dateToParse);
             if (!isNaN(parsed.getTime())) pubDate = parsed;
           }
 
