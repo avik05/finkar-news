@@ -232,6 +232,15 @@ export default function Navbar({ activeCategory, setActiveCategory, searchQuery,
                 />
                 <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-muted w-4 h-4" />
               </div>
+              {!isSubscribed && (
+                <button
+                  onClick={handleNotificationClick}
+                  className="flex items-center justify-center gap-2 w-full px-3 py-2.5 rounded-md text-sm font-black uppercase tracking-widest text-muted hover:text-foreground hover:bg-card border border-border/50 mb-3"
+                >
+                  <Bell className="w-4 h-4" />
+                  <span>Enable Notifications</span>
+                </button>
+              )}
               <Link
                 href="/briefs"
                 onClick={() => setIsOpen(false)}

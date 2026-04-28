@@ -11,6 +11,7 @@ import QuickAccess from "@/components/QuickAccess";
 import DailyBriefs from "@/components/DailyBriefs";
 import { NewsArticle } from "@/types";
 import { useReaderStore } from "@/lib/readerStore";
+import { supabase } from "@/utils/supabase";
 
 interface MainContentProps {
   articles: NewsArticle[];
@@ -21,6 +22,37 @@ export default function MainContent({ articles }: MainContentProps) {
   const searchParams = useSearchParams();
   const [activeCategory, setActiveCategory] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
+  const [localArticles, setLocalArticles] = useState<NewsArticle[]>(articles);
+
+  useEffect(() => {
+    // Poll for new articles every 5 minutes
+    const interval = setInterval(async () => {
+      try {
+        const { data: generalData } = await supabase
+          .from('news_articles')
+          .select('*')
+          .order('published_at', { ascending: false })
+          .limit(100);
+
+        const { data: briefData } = await supabase
+          .from('news_articles')
+          .select('*')
+          .eq('source', 'NewsBytes')
+          .order('published_at', { ascending: false })
+          .limit(20);
+
+        const combined = [...(generalData || []), ...(briefData || [])] as NewsArticle[];
+        const unique = Array.from(new Map(combined.map(item => [item.url, item])).values());
+        
+        setLocalArticles(unique);
+        console.log("Articles auto-refreshed.");
+      } catch (e) {
+        console.error("Auto-refresh error:", e);
+      }
+    }, 5 * 60 * 1000); // 5 minutes
+
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     const readUrl = searchParams.get("read");
@@ -30,7 +62,7 @@ export default function MainContent({ articles }: MainContentProps) {
   }, [searchParams, openReader]);
 
   // Combined filtering logic
-  const mainArticles = articles.filter(a => a.source !== 'NewsBytes');
+  const mainArticles = localArticles.filter(a => a.source !== 'NewsBytes');
   const filteredArticles = mainArticles.filter(article => {
     const matchesCategory = activeCategory === "All" || article.category === activeCategory;
     const matchesSearch = searchQuery === "" || 
@@ -83,7 +115,7 @@ export default function MainContent({ articles }: MainContentProps) {
                       "football", "goal", "match", "score", "tennis", "olympics", "box office"
                     ];
                     const allowedCategories = ["Markets", "Economy", "AI Updates", "Global"];
-                    return articles
+                    return localArticles
                       .filter(a => a.source === 'NewsBytes')
                       .filter(article => {
                         const content = `${article.title} ${article.summary} ${article.category}`.toLowerCase();
