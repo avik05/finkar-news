@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Search, Menu, X, TrendingUp, Sun, Moon, Sparkles } from "lucide-react";
+import { Search, Menu, X, TrendingUp, Sun, Moon, Sparkles, Bell } from "lucide-react";
+import OneSignal from "react-onesignal";
 import { motion, AnimatePresence } from "framer-motion";
 import { useThemeStore } from "@/lib/themeStore";
 
@@ -20,6 +21,14 @@ export default function Navbar({ activeCategory, setActiveCategory, searchQuery,
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const { theme, setTheme } = useThemeStore();
   const [mounted, setMounted] = useState(false);
+
+  const handleNotificationClick = () => {
+    try {
+      OneSignal.Slidedown.promptPush();
+    } catch (e) {
+      console.error("OneSignal prompt error:", e);
+    }
+  };
 
   useEffect(() => {
     setMounted(true);
@@ -101,6 +110,14 @@ export default function Navbar({ activeCategory, setActiveCategory, searchQuery,
               ))}
             </div>
             
+            <button 
+              onClick={handleNotificationClick}
+              className="p-2 transition-colors rounded-full hover:bg-card border border-transparent hover:border-border text-muted hover:text-foreground"
+              title="Enable Notifications"
+            >
+              <Bell className="w-5 h-5" />
+            </button>
+            
             <div className="flex items-center">
               <AnimatePresence>
                 {isSearchOpen && (
@@ -155,6 +172,14 @@ export default function Navbar({ activeCategory, setActiveCategory, searchQuery,
                 />
               ))}
             </div>
+            <button 
+              onClick={handleNotificationClick}
+              className="p-2 transition-colors rounded-full text-muted hover:text-foreground"
+              title="Enable Notifications"
+            >
+              <Bell className="w-5 h-5" />
+            </button>
+
             <button
               onClick={() => setIsOpen(!isOpen)}
               className="p-2 text-muted hover:text-foreground"
