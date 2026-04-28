@@ -45,7 +45,8 @@ export default function BriefsPage() {
           const content = `${article.title} ${article.summary} ${article.category}`.toLowerCase();
           const isBlacklisted = BLACKLIST_KEYWORDS.some(keyword => content.includes(keyword));
           const isAllowedCategory = allowedCategories.includes(article.category);
-          return !isBlacklisted && isAllowedCategory;
+          const isSpecificArticle = article.title.includes("Kerala: Dalit organizations") || article.title.includes("student's suicide");
+          return !isBlacklisted && isAllowedCategory && !isSpecificArticle;
         });
 
         setArticles(filteredData);
