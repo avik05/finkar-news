@@ -17,6 +17,7 @@ import {
   Share2
 } from "lucide-react";
 import { useThemeStore } from "@/lib/themeStore";
+import PromoFooter from "./PromoFooter";
 
 interface ReaderModeProps {
   url: string;
@@ -390,6 +391,8 @@ export default function ReaderMode({ url, isOpen, onClose }: ReaderModeProps) {
                       className={`prose prose-lg max-w-none font-serif leading-[1.8] space-y-8 text-justify hyphens-auto editorial-reading-area ${proseThemeStyles[theme]} ${fontClasses[fontSize]}`}
                       dangerouslySetInnerHTML={{ __html: content.content }}
                     />
+                    
+                    <PromoFooter />
                     
                     <footer className="mt-24 pt-12 border-t border-border">
                       <div className="flex flex-col items-center gap-8">

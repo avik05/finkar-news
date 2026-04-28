@@ -1,6 +1,8 @@
 "use client";
 
+import React from "react";
 import NewsCard from "./NewsCard";
+import PromoCard from "./PromoCard";
 import { NewsArticle } from "@/types";
 
 const CATEGORIES = ["All", "Markets", "Economy", "Companies", "Global"];
@@ -45,17 +47,19 @@ export default function NewsFeed({ initialArticles, activeCategory, searchQuery 
 
         {displayedArticles.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {displayedArticles.map((news) => (
-              <NewsCard 
-                key={news.id} 
-                title={news.title}
-                source={news.source}
-                url={news.url}
-                summary={news.summary}
-                category={news.category}
-                timeAgo={formatTimeAgo(news.published_at)}
-                imageUrl={news.image_url || undefined} 
-              />
+            {displayedArticles.map((news, index) => (
+              <React.Fragment key={news.id}>
+                {index === 3 && <PromoCard />}
+                <NewsCard 
+                  title={news.title}
+                  source={news.source}
+                  url={news.url}
+                  summary={news.summary}
+                  category={news.category}
+                  timeAgo={formatTimeAgo(news.published_at)}
+                  imageUrl={news.image_url || undefined} 
+                />
+              </React.Fragment>
             ))}
           </div>
         ) : (
