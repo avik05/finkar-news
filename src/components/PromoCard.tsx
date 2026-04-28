@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 export default function PromoCard() {
   return (
@@ -29,6 +30,16 @@ export default function PromoCard() {
         <p className="text-sm text-muted leading-relaxed font-medium mb-6">
           Connect your accounts, track total net worth, and receive smart analytics triggers inside a unified monitoring hub.
         </p>
+
+        <div className="relative w-full aspect-[16/9] mb-6 rounded-xl overflow-hidden border border-border/50 bg-black/5">
+          <Image
+            src="/finkar-screenshot.png"
+            alt="Finkar Dashboard Preview"
+            fill
+            className="object-cover group-hover:scale-105 transition-transform duration-700"
+            unoptimized
+          />
+        </div>
       </div>
 
       <Link 
