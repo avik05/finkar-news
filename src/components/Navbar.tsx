@@ -222,6 +222,16 @@ export default function Navbar({ activeCategory, setActiveCategory, searchQuery,
             className="md:hidden border-t border-border bg-background"
           >
             <div className="px-4 pt-2 pb-4 space-y-1">
+              <div className="relative mb-3">
+                <input
+                  type="text"
+                  placeholder="Search news..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-card border border-border rounded-full py-2.5 pl-4 pr-10 text-[10px] uppercase font-black tracking-widest outline-none focus:border-accent transition-colors text-foreground"
+                />
+                <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-muted w-4 h-4" />
+              </div>
               <Link
                 href="/briefs"
                 onClick={() => setIsOpen(false)}
