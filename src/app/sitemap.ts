@@ -4,7 +4,7 @@ import { supabase } from "@/utils/supabase";
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = "https://news.getfinkar.com";
 
-  const staticRoutes = ["", "/briefs", "/playground"].map((route) => ({
+  const staticRoutes = ["", "/briefs"].map((route) => ({
     url: `${baseUrl}${route}`,
     lastModified: new Date(),
     changeFrequency: "always" as const,
