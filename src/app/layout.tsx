@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Lora, Noto_Sans_Devanagari } from "next/font/google";
 import "./globals.css";
 import ThemeSync from "@/components/ThemeSync";
+import OneSignalInit from "@/components/OneSignalInit";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -59,6 +60,7 @@ export default function RootLayout({
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} ${lora.variable} ${notoHindi.variable} antialiased min-h-screen bg-background text-foreground selection:bg-accent selection:text-white`}>
         <ThemeSync />
+        <OneSignalInit />
         {children}
       </body>
     </html>
