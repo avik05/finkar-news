@@ -75,7 +75,7 @@ function HeroCarousel({
 
   return (
     <div className={`relative ${height} w-full rounded-[2rem] md:rounded-[2.5rem] overflow-hidden group shadow-2xl shadow-black/20 bg-zinc-950 border border-border ${className}`}>
-      <AnimatePresence mode="wait">
+      <AnimatePresence>
         <motion.div
           key={currentArticle.id}
           initial={{ opacity: 0, x: 20 }}
